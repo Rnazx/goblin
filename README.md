@@ -1,4 +1,4 @@
-# goblin (Galactic magnetic fields from OBservervationaL INputs)
+# goblin: Galactic magnetic fields from OBservervationaL INputs
 A generalised framework to estimate galactic magnetic fields using observational inputs.
 
 <img src = "https://github.com/Rnazx/MSc.-Thesis/assets/42196798/9cc608a8-89d9-4c36-9f5d-330ed0c3cb59" width ="900" height = "450" alt = "flowchart_conceptual" />
