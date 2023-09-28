@@ -43,3 +43,5 @@ def interpolation(list1,list2,standard):
     interpolated_data = griddata(list1, list2, standard, method='linear', fill_value=nan, rescale=False)
     return interpolated_data
 ###########################################################################################################################################
+os.chdir(current_directory+'M31_data')
+raw_data = pd.read_csv('combined_data_m31.csv')
