@@ -42,12 +42,12 @@ print('Succesfully read the parameters and switches')
 # with open(current_directory+ '\data\data_interpolated.csv', 'rb') as f:
 #     data = pickle.load(f)
 os.chdir(current_directory+'\data')
-data = (pd.read_csv('data_interpolated.csv'))
-#print(tuple(data.itertuples(index=False, name=None)))
-
+data = (pd.read_csv('data_interpolated.csv')) #.T
+#data = data.drop(data.index[0])
 #use this for m31 and m33
 # kpc_r = np.array(data["Radius(kpc)"])
-kpc_r, dat_sigmatot, dat_sigmaHI,dat_sigmaH2, dat_q, dat_omega, dat_sigmasfr, T= tuple(data.itertuples(index=False, name=None))
+#print(tuple((data.values.T)[1:]))
+kpc_r, dat_sigmatot, dat_sigmaHI,dat_sigmaH2, dat_q, dat_omega, dat_sigmasfr, T= tuple((data.values.T)[1:])
 # print(kpc_r)
 # finding total gas density
 # adds HI and H2 data based on switch 
@@ -59,10 +59,9 @@ else:
 #use this for m51 and 6946
 #difference as here we have to mandatorily consider molecular gas density
 # kpc_r, dat_sigmatot, dat_sigma, dat_q, dat_omega, dat_sigmasfr, T= data
-
 r = kpc_r.size  # common radius of the interpolated data
 
-dat_sigmagas = params['mu']*dat_sigma #mu= 14/11 set in parameters.in file
+dat_sigmagas = (3*params['mu'])*dat_sigma/(4-params['mu']) #mu= 14/11 set in parameters.in file
 
 #####################################################################################################################
 
