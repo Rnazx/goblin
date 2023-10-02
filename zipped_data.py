@@ -47,7 +47,7 @@ data = (pd.read_csv('data_interpolated.csv')) #.T
 #use this for m31 and m33
 # kpc_r = np.array(data["Radius(kpc)"])
 #print(tuple((data.values.T)[1:]))
-kpc_r, dat_sigmatot, dat_sigmaHI,dat_sigmaH2, dat_q, dat_omega, dat_sigmasfr, T= tuple((data.values.T)[1:])
+kpc_r, dat_sigmatot, dat_sigmaHI,dat_sigmaH2, dat_q, dat_omega, dat_sigmasfr, T= tuple((data.values.T))
 # print(kpc_r)
 # finding total gas density
 # adds HI and H2 data based on switch 
