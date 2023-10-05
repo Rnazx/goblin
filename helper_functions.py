@@ -84,7 +84,7 @@ def exp_analytical_data(express, data_pass):
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
     exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, Rk: rk, mu: m}) for sigt, sig, sigsfr, qs, oms, zets, t, ps, b, ca, rk, m in data_pass])
+                   psi: ps, bet: b, calpha: ca, Rk: rk, mu: m}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m in data_pass])
 
     return exp
 
@@ -131,7 +131,7 @@ def root_finder(h_val, h_init=7e+25):
 
 def scal_helper(express, data_pass, observable=zet, _range=np.linspace(1, 5000, 50)):
     express = express.subs(const).simplify(force=True)
-    sigt, sig, sigsfr, qs, oms, zets, t, ps, b, ca, rk, m = data_pass[0]
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m = data_pass[0]
     val_subs = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
                 omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m}
     try:
