@@ -93,8 +93,8 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
     df = find_and_multiply_column(df, 'r kpc', distance_new/distance_old)
 
     #change the names
-    df = replace_conversion(df, 'arcmin', 'kpc')
-    df = replace_conversion(df, 'arcsec', 'kpc')
+    df = replace_conversion(df, 'arcmin', 'kpc;')
+    df = replace_conversion(df, 'arcsec', 'kpc;')
     #distance and inclination correction
     df = find_and_multiply_column(df, 'r kpc', 1, np.cos(i_new)/np.cos(i_old))
 
