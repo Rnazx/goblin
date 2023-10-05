@@ -11,15 +11,15 @@ raw_data = pd.read_csv('combined_data_m31.csv', skiprows=1)
 
 
 #distance correction
-distance_m31= 0.78 #Mpc
-distances_Mpc=np.array([0.785,0.785,0.780,0.780])
+n_dist_m31= 0.78 #Mpc
+o_dist_m31=np.array([0.785,0.785,0.780,0.780])
 
 #inclination correction
-i_m31= 75 #deg
-inclinations=np.array([i_m31,77,i_m31,77, i_m31,75,77.5]) #used i_m31 as no inclination correction is needed for Claude data
+n_i_m31= 75 #deg
+o_i_m31=np.array([n_i_m31,77,n_i_m31,77, n_i_m31,75,77.5]) #used i_m31 as no inclination correction is needed for Claude data
 
-raw_data = incl_distance_correction(raw_data, distance_new=distance_m31, distance_old=distances_Mpc,\
-                          i_new=np.radians(i_m31), i_old=np.radians(inclinations))
+raw_data = incl_distance_correction(raw_data, distance_new=n_dist_m31, distance_old=o_dist_m31,\
+                          i_new=np.radians(n_i_m31), i_old=np.radians(o_i_m31))
 
 #data to be removed
 data_rem = 'chemin'
