@@ -60,7 +60,30 @@ const = [(boltz, cgs_kB), (mh, g_mH), (G, cgs_G), (gamma, gval),
 
 ######################################################################################################################
 
+def parameter_read(filepath):
+#opening these files and making them into dictionaries
+    params = {}
+    with open(filepath, 'r') as FH:
+        for file in FH.readlines():
+            line = file.strip()
+            try:
+                par_name, value = line.split('= ')
+            except ValueError:
+                print("Record: ", line)
+                raise Exception(
+                    "Failed while unpacking. Not enough arguments to supply.")
+            try:
+                params[par_name] = np.float64(value)
+            except ValueError: #required cz of 14/11 in parameter.in file
+                try:
+                    num, denom = value.split('/')
+                    params[par_name] = np.float64(num) / np.float64(denom)
+                except ValueError:
+                    params[par_name] = value
+            
+    return params
 
+###################################################################################################################################
 def power_law(x, a, b):
     return a*np.power(x, b) 
 

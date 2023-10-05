@@ -3,41 +3,15 @@ from sympy import *
 import pickle
 import os
 import pandas as pd
+from helper_functions import parameter_read
 
 current_directory = str(os.getcwd())
 
-params = {}
-switch = {}
-
-#opening these files and making them into dictionaries
-with open(current_directory+'\parameter_file.in', 'r') as FH:
-    for file in FH.readlines():
-        line = file.strip()
-        try:
-            par_name, value = line.split('=')
-        except ValueError:
-            print("Record: ", line)
-            raise Exception(
-                "Failed while unpacking. Not enough arguments to supply.")
-        try:
-            params[par_name] = np.float64(value)
-        except ValueError: #required cz of 14/11 in parameter.in file
-            num, denom = value.split('/')
-            params[par_name] = np.float64(num) / np.float64(denom)
-
-with open(current_directory+'\switches.in', 'r') as FH:
-    for file in FH.readlines():
-        line = file.strip()
-        try:
-            sw_name, value = line.split('=')
-        except ValueError:
-            print("Record: ", line)
-            raise Exception(
-                "Failed while unpacking. Not enough arguments to supply.")
-        switch[sw_name] = value
-
+params = parameter_read(current_directory+'\parameter_file.in')
+switch = parameter_read(current_directory+'\switches.in')
+print(params, switch)
 print('Succesfully read the parameters and switches')
-
+#current_directory+'\parameter_file.in'
 #choose galaxy name in the next line to choose the galaxy
 os.chdir(current_directory+'\data')
 data = (pd.read_csv('data_interpolated.csv')) 
