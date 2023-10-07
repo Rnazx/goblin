@@ -38,7 +38,7 @@ This interpolated data is then used in [zipped_data.py](zipped_data.py), where t
 <p align="center">
 <img src = "https://github.com/Rnazx/goblin/assets/42196798/800f3048-82c3-46b5-8927-526da900423d" width ="825" height = "500" alt = "interpolation" />
 
-<em align="center">Using the desired model, we solve for the turbulence and magnetic fields. Five additional parameters are introduced.</em>
+<em align="center">Using the desired model, we solve for the turbulence and magnetic fields. Five additional parameters are introduced. For the equations mentioned in this flowchart, refer to the manuscript.</em>
 </p>
 
 This pickle file is further used in the [get_magnetic_observables.py](get_magnetic_observables.py) script. In this script, we numerically solve for the magnetic observables and turbulence parameters using a bunch of functions from the [helper_functions.py](helper_functions.py) script.
