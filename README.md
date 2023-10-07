@@ -40,7 +40,7 @@ This runs all the necessary scripts, from algebraically solving the expressions 
 
 ### 3. Using the data in the solved expressions
 <p align="center">
-<img src = "https://github.com/Rnazx/goblin/assets/42196798/800f3048-82c3-46b5-8927-526da900423d" width ="825" height = "400" alt = "interpolation" />
+<img src = "https://github.com/Rnazx/goblin/assets/42196798/800f3048-82c3-46b5-8927-526da900423d" width ="825" height = "450" alt = "interpolation" />
 
 <em align="center"> We solve for the turbulence and magnetic fields using the desired model. Five additional parameters are introduced. For the equations mentioned in this flowchart, kindly refer to the manuscript.</em>
 </p>
