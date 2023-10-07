@@ -38,7 +38,7 @@ This interpolated data is then used in [zipped_data.py](zipped_data.py), where t
 <p align="center">
 <img src = "https://github.com/Rnazx/goblin/assets/42196798/800f3048-82c3-46b5-8927-526da900423d" width ="825" height = "500" alt = "interpolation" />
 
-<em align="center">Using the desired model, we solve for the turbulence and magnetic fields.</em>
+<em align="center">Using the desired model, we solve for the turbulence and magnetic fields. Five additional parameters are introduced.</em>
 </p>
 
 This pickle file is further used in the [get_magnetic_observables.py](get_magnetic_observables.py) script. In this script, we numerically solve for the magnetic observables and turbulence parameters using a bunch of functions from the [helper_functions.py](helper_functions.py) script.
@@ -47,6 +47,9 @@ This pickle file is further used in the [get_magnetic_observables.py](get_magnet
 
 **Substituting for this solution in the other expressions:** This numerical solution is then used to obtain the turbulence and the magnetic field quantities using the [_datamaker()_](helper_functions.py#L94) function.
 These solutions obtained are again stored in a pickle file which is used in [plots.ipynb](plots.ipynb) to plot the desired outputs.
+
+## Modifying the model
+To modify the model, you can change the expressions for the turbulence and the magnetic fields in the [expressions](/expressions) directory. If the model is changed, uncomment the corresponding lines in [main.sh](main.sh).
 
 
 
