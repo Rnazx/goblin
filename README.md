@@ -59,7 +59,7 @@ Based on the galaxy chosen in config.sh, the data for the observables correspond
 * In this script, we numerically solve for the magnetic observables and turbulence parameters using a bunch of functions from the [helper_functions.py](src/helper_functions.py) script.
 * **Solving for h numerically:** The [_exp_analytical_data()_](src/helper_functions.py#L82) is used to substitute the values of the observables and the physical constants in the solved expression for h. We then use Scipy's fsolve routine to find the root of the polynomial equation in h. 
 * **Substituting for this solution in the other expressions:** This numerical solution is then used to obtain the turbulence and the magnetic field quantities using the [_datamaker()_](src/helper_functions.py#L94) function. This output is stored in the [outputs](outputs) directory, which is named according to the galaxy chosen and the parameter values.
-* This output file is then used in [plots_generator.py](srcplot_generator.py) to plot the desired outputs and store it as a pdf file in the [plots](plots) directory.
+* This output file is then used in [plots_generator.py](src/plot_generator.py) to plot the desired outputs and store it as a pdf file in the [plots](plots) directory.
 
 ## Modifying the model
 * To modify the model, you can change the expressions for the turbulence and the magnetic fields in the [expressions](/expressions) directory.
