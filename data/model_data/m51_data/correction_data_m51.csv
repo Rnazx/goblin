@@ -1,0 +1,8 @@
+M51,,
+qty,distance_m51 (Mpc),inclination_m51 (deg)
+sigma_tot,9.6,20
+sigma_HI,8,20
+sigma_H2,8,20
+v_circ,9.6,20
+sigma_sfr,8,20
+final,8.5,20
