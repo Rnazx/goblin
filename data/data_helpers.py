@@ -10,8 +10,8 @@ arcsec_deg = 3600e0
 #REQUIRED FUNCTIONS
 ###########################################################################################################################################
 #extrapolation
-def interpolation(list1,list2,standard):
-    interpolated_data = griddata(list1, list2, standard, method='linear', fill_value=nan, rescale=False)
+def interpolation(x,y,standard):
+    interpolated_data = griddata(x, y, standard, method='linear', fill_value=nan, rescale=False)
     return interpolated_data
 
 def replace_conversion(df, substring_to_replace, replacement_string):
@@ -86,17 +86,15 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
     #radii_df = keep_substring_columns(df, 'r ')[0]
     #radii_df = radii_df.drop(columns='error kms')
     #convert arcmin to kpc
-    df = find_and_multiply_column(df, 'r arcmin', ((distance_new*1000)/(arcmin_deg*deg_rad)))
+    df = find_and_multiply_column(df, 'arcmin', ((distance_new*1000)/(arcmin_deg*deg_rad)))
     #convert arcsec to kpc
-    df = find_and_multiply_column(df, 'r arcsec', ((distance_new*1000)/(arcsec_deg*deg_rad)))
-    #distance correction
-    df = find_and_multiply_column(df, 'r kpc', distance_new/distance_old)
-
+    df = find_and_multiply_column(df, 'arcsec', ((distance_new*1000)/(arcsec_deg*deg_rad)))
     #change the names
     df = replace_conversion(df, 'arcmin', 'kpc;')
     df = replace_conversion(df, 'arcsec', 'kpc;')
+    
     #distance and inclination correction
-    df = find_and_multiply_column(df, 'r kpc', 1, np.cos(i_new)/np.cos(i_old))
+    df = find_and_multiply_column(df, 'kpc', distance_new/distance_old, np.cos(i_new)/np.cos(i_old))
 
     return df
 
@@ -107,15 +105,20 @@ def molfrac_to_H2(df):
         return df
     else:
         HI_data = keep_substring_columns(df, 'HI')
-        sigma_H2 = HI_data[0].multiply((1/(1-molfrac_data[0])).values, axis = 0)
+        sigma_H2 = HI_data[0].multiply((molfrac_data[0]/(1-molfrac_data[0])).values, axis = 0)
         index_of_HI = df.columns.get_loc(HI_data[1][0])
         df.insert(index_of_HI+1, 'sigma_H2', sigma_H2)
         df.drop(columns=molfrac_data[1], inplace=True)
         return df
     
-def add_temp(m, c, df):
+def add_temp(temp_fit, df):
+    m = temp_fit[0]
+    c = temp_fit[1]
     r = df.iloc[:,0].to_numpy().flatten()
-    T = m*r +c
+    try:
+        T = m*r +c
+    except:
+        T = interpolation(m, c, r)
     df.insert(len(df.columns), 'T', T)
     return
 
