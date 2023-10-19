@@ -25,8 +25,35 @@ cm_pc = cm_kpc/1e+3
 s_Myr = 1e+6*(365*24*60*60)  # megayears to seconds
 
 ###########################################################################################################################################
-raw_data = pd.read_csv('formatted_data.csv')
+galaxy_name = os.environ.get('galaxy_name')
+base_path = os.environ.get('MY_PATH')
 
+os.chdir(os.path.join(base_path, 'data','model_data', f'{galaxy_name}_data'))
+raw_data = pd.read_csv(f'combined_data_{galaxy_name}.csv', skiprows=1)
+corrections = pd.read_csv(f'correction_data_{galaxy_name}.csv', skiprows=1, index_col=0)
+
+#distance correction
+new_dist= corrections.iloc[-1,0]
+old_dist = corrections.iloc[:-1,0].values
+
+#inclination correction
+new_i= corrections.iloc[-1,1] #deg
+old_i= corrections.iloc[:-1,1].values #used i as no inclination correction is needed for Claude data
+raw_data = incl_distance_correction(raw_data, distance_new=new_dist, distance_old=old_dist,\
+                          i_new=np.radians(new_i), i_old=np.radians(old_i))
+
+#data to be removed
+try:
+    data_rem = pd.read_csv(f'removed_data_{galaxy_name}.csv', dtype=str)
+except:
+    data_rem = []
+for d in data_rem:
+    remove_data(raw_data, d)
+
+temp_fit = np.genfromtxt(f'temp_{galaxy_name}.csv', skip_header = 1,delimiter=',')
+
+###################################################################################################################
+#Finished Distance and inclination corrections
 raw_data = vcirc_to_qomega(raw_data)
 
 radii_df = keep_substring_columns(raw_data, 'r ')[0]
@@ -36,14 +63,15 @@ coarsest_radii_mask = radii_df.isnull().sum().idxmax()
 
 print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data,coarsest_radii_mask)))
 kpc_r = radii_df[coarsest_radii_mask].to_numpy()
+
 #print(raw_data)
 interpolated_df = df_interpolation(raw_data,radii_df, kpc_r)
+interpolated_df = molfrac_to_H2(interpolated_df)
+add_temp(temp_fit,interpolated_df)
+
 nan_mask = np.isnan(interpolated_df)
 interpolated_df = interpolated_df[~(nan_mask.sum(axis=1)>0)]
 #interpolated_df.dropna()
-
-interpolated_df = molfrac_to_H2(interpolated_df)
-add_temp(0.017e+4,0.5e+4,interpolated_df)
 
 conv_factors=np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), 1,cm_km/cm_kpc,
               g_Msun/((s_Myr*1e3)*(cm_pc**2)),1])
@@ -52,4 +80,5 @@ interpolated_df = interpolated_df*conv_factors
 #interpolated_df= replace_conversion(interpolated_df, 'kms', 'cms')
 
 print(interpolated_df)
+os.chdir(current_directory)
 interpolated_df.to_csv('data_interpolated.csv', index = False)
