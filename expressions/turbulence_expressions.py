@@ -55,6 +55,7 @@ kalpha = Symbol('K_alpha')
 bet = Symbol('beta')
 alphak = Symbol('alpha_k')
 Gamma = Symbol('Gamma')
+A = Symbol('A')
 
 
 # Defining the general parameters
@@ -99,9 +100,9 @@ l = simplify(l)
 
 
 
-hg = (u**2 + 2*cs**2)/(3*pi*G*(sigma + (sigmatot/zet)))
-hsub = zet*(cs**2)/(3*pi*G*sigmatot)
-hsup = zet*(u**2)/(3*pi*G*sigmatot)
+hg = (u**2 + (A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
+hsub = ((A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
+hsup = (u**2)/(3*pi*G*(sigma + (sigmatot/zet)))
 
 rho = sigma/(2*h)
 n = rho/((14/11)*mh)

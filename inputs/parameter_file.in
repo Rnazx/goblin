@@ -1,7 +1,8 @@
 \zeta= 15
-\psi= 2
-\beta= 12
+\psi= 1
+\beta= 8
 C_\alpha= 4
-R_\kappa= 0.03
+R_\kappa= 0.01
 mu= 14/11
 ks_exp= 1.4
+A= 1.414

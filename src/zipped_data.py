@@ -32,13 +32,13 @@ r = kpc_r.size  # common radius of the interpolated data
 #mu= 14/11 set in parameters.in file
 data['\sigma_gas']*= (3*params['mu'])/(4-params['mu'])
 #####################################################################################################################
-
 #####################################################################################################################
 #to apply kennicut-schmidt relation
 ks_exp = params['ks_exp']
 ks_const = (data.iloc[:, -2]/(data['\sigma_gas'])**(ks_exp)).mean()
 
-ks_split = switch['force_kennicut_scmidt'].split() #currently this is set to 'No, sigmadata'
+ks_split = switch['force_kennicut_scmidt'].split(',') #currently this is set to 'No, sigmadata'
+print(ks_split[0])
 if ks_split[0] == 'Yes':
     if ks_split[1] == 'sigmasfrdata':
         data['\sigma_gas'] = (data.iloc[:, -2]/ks_const)**(1/ks_exp)

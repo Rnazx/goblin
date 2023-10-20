@@ -36,6 +36,7 @@ kalpha = Symbol('K_alpha')
 bet = Symbol('beta')
 alphak = Symbol('alpha_k')
 Gamma = Symbol('Gamma')
+A = Symbol('A')
 
 
 # Defining the general parameters
@@ -109,7 +110,7 @@ def exp_analytical_data(express, data_pass):
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
     exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, Rk: rk, mu: m}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m in data_pass])
+                   psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a in data_pass])
 
     return exp
 
