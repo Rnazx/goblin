@@ -22,27 +22,6 @@ def replace_conversion(df, substring_to_replace, replacement_string):
 
     return updated_df
 
-def find_and_multiply_column(dataframe, substring, dist_multiplier = 1, incl_multiplier = 1):
-    # Create a copy of the DataFrame to avoid modifying the original
-    result_df = dataframe.copy()
-    iter_dist = 0
-    iter_incl = 0
-    for col in result_df.columns:
-        if substring in col:
-            try:
-                result_df[col] = result_df[col] * dist_multiplier[iter_dist]
-            except:
-                result_df[col] = result_df[col] * dist_multiplier
-            iter_dist+=1
-        else:
-            try:
-                result_df[col] = result_df[col] * incl_multiplier[iter_incl]
-            except:
-                result_df[col] = result_df[col] * incl_multiplier
-            iter_incl+=1
-            
-    return result_df
-
 def keep_substring_columns(dataframe, substring):
     # Get the columns that contain the specified substring
     filtered_columns = [col for col in dataframe.columns if substring in col]
@@ -83,6 +62,26 @@ def df_interpolation(df, radii_df, standard):
 #     return df
 
 def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
+    def find_and_multiply_column(dataframe, substring, dist_multiplier = 1, incl_multiplier = 1):
+    # Create a copy of the DataFrame to avoid modifying the original
+        result_df = dataframe.copy()
+        iter_dist = 0
+        iter_incl = 0
+        for col in result_df.columns:
+            if substring in col:
+                try:
+                    result_df[col] = result_df[col] * dist_multiplier[iter_dist]
+                except:
+                    result_df[col] = result_df[col] * dist_multiplier
+                iter_dist+=1
+            else:
+                try:
+                    result_df[col] = result_df[col] * incl_multiplier[iter_incl]
+                except:
+                    result_df[col] = result_df[col] * incl_multiplier
+                iter_incl+=1
+                
+        return result_df
     #radii_df = keep_substring_columns(df, 'r ')[0]
     #radii_df = radii_df.drop(columns='error kms')
     #convert arcmin to kpc
@@ -92,10 +91,11 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
     #change the names
     df = replace_conversion(df, 'arcmin', 'kpc;')
     df = replace_conversion(df, 'arcsec', 'kpc;')
-    
+    #x = df.copy()
     #distance and inclination correction
     df = find_and_multiply_column(df, 'kpc', distance_new/distance_old, np.cos(i_new)/np.cos(i_old))
-
+    
+    #print(x.compare(df))
     return df
 
 def molfrac_to_H2(df):

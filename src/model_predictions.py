@@ -31,7 +31,6 @@ with open('mag_exp.pickle', 'rb') as f:
     biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc = pickle.load(f)
 
 os.chdir(current_directory)
-
 cs_f = exp_analytical_data(cs, data_pass).astype(np.float64)
 # h = Symbol('h')
 #print(exp_analytical_data(hg, data_pass)[0].subs(h,1), cs_f)
@@ -45,7 +44,7 @@ for i,hi in enumerate(h_init_trys):
         u_f = datamaker(u, data_pass, h_f)
         taue_f = datamaker(taue, data_pass, h_f)
         taur_f = datamaker(taur, data_pass, h_f)
-        tau_f = np.minimum(taue_f, taur_f)
+        tau_f = taue_f #np.minimum(taue_f, taur_f)
 
         omega = Symbol('\Omega')
         kalpha = Symbol('K_alpha')

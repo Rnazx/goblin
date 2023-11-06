@@ -157,9 +157,9 @@ def root_finder(h_val, h_init=7e+25):
 
 def scal_helper(express, data_pass, observable=zet, _range=np.linspace(1, 5000, 50)):
     express = express.subs(const).simplify(force=True)
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m = data_pass[0]
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = data_pass[0]
     val_subs = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m}
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
     try:
         #val_subs.pop(observable)
         obs_val = (val_subs.pop(observable))*_range

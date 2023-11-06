@@ -75,7 +75,6 @@ with open('zip_data.in', 'rb') as f:
 # dat_u_warp = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS_warp, kpc_r, method='linear',
 #                  fill_value=nan, rescale=False)*1e+5
 
-
 os.chdir(current_directory)
 
 from helper_functions import pitch_angle_integrator
@@ -86,6 +85,8 @@ pB, po = pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
 G_scal_Bbartot = np.sqrt(biso_f**2 + bani_f**2 + Bbar_f**2)
 G_scal_Bbarreg = Bbar_f
 G_scal_Bbarord = np.sqrt(bani_f**2 + Bbar_f**2)
+
+print(G_scal_Bbartot*1e6)
 
 # G_scal_Bbartot_err = np.sqrt((biso_err*biso_f )**2+ (bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbartot
 # G_scal_Bbarreg_err = Bbar_err

@@ -7,7 +7,7 @@ import os
 from matplotlib.ticker import FormatStrFormatter
 import sys
 from scipy.interpolate import griddata
-from helper_functions import scal_finder
+from helper_functions import parameter_read
 
 base_path = os.environ.get('MY_PATH')
 params = parameter_read(os.path.join(base_path,'inputs','parameter_file.in'))
@@ -17,8 +17,7 @@ current_directory = str(os.getcwd())
 
 with open('output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+
           str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
-                model_f = pickle.load(
-        f)
+                model_f = pickle.load(f)
 
 os.chdir(os.path.join(base_path,'inputs'))
 

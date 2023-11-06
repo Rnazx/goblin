@@ -7,4 +7,4 @@ export MY_PATH=$(pwd)
 # read galname
 # printf "You have selected $galname \n"  
 
-export galaxy_name="m33"
+export galaxy_name="ngc6946"
