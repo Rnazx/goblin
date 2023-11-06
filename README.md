@@ -14,7 +14,7 @@ pip install -r requirements.txt
 A description of the code framework is available in [this](framework.md) file.
 
 ## Instructions to run the code
-The path of the main directory is set in config.sh. We can also change the galaxy for which we want the magnetic field. Observable data is available for four galaxies, namely M31, M33, M51 and NGC6946. If you want to run a python script separately, please run the following command beforehand.
+The path of the main directory is set in config.sh. We can also change the galaxy for which we want the magnetic field. Observable data is available for four galaxies, namely M31, M33, M51 and NGC 6946. If you want to run a python script separately, please run the following command beforehand to set all the environment variables.
 ```
 source config.sh
 ```
@@ -26,15 +26,9 @@ This runs all the necessary scripts, from algebraically solving the expressions 
 ### 1. Cleaning and formatting the data
 Based on the galaxy chosen in config.sh, the data for the observables corresponding to that galaxy is picked. 
 * For each galaxy, the data for the different observables are compiled from different sources and used in the Python files in the [data](data) directory.
-* For some observables, multiple sources of data were available. In such cases, the one with better agreement with the final model predictions was chosen.
+* A choice is made between the different sources of data for the observables.
 * The data used by the model is stored in the [model_data](data/model_data) directory, while the data used to compare our model predictions is stored in the [supplementary_data](data/supplementary_data) directory.
-*  As this data is compiled from different sources, the radial range involved for each observable can be different. Hence, an interpolation method is implemented where the coarsest radial range is chosen, and the other observables are interpolated for this radial range. This is done in the [data_common.py](data/data_common.py) script. A depiction of this interpolation method is shown:
-<p align="center">
-<img src = "https://github.com/Rnazx/MSc.-Thesis/assets/42196798/edec171d-9f47-4877-b9ec-7e1c19892d9c" width ="500" height = "350" alt = "interpolation" />
-
-<em align="center">The black dots represent the raw data. The green lines represent the set of points for which we want the data to be interpolated.</em>
-</p>
-
+*  As this data is compiled from different sources, the radial range involved for each observable can be different. Hence, an interpolation method is implemented where the coarsest radial range is chosen, and the other observables are interpolated for this radial range. This is done in the [data_common.py](data/data_common.py) script.
 **Note:** The scripts have various switches to choose the source from which the data is taken. This information is stored in removed_data_{galaxy_name}.csv file
 
 * This interpolated data is then used in [zipped_data.py](src/zipped_data.py), where inputs such as the parameters and switches are read from the [parameters.in](inputs/parameters.in) and [switches.in](inputs/switches.in) input files in the [inputs](inputs) directory.
@@ -44,7 +38,7 @@ Based on the galaxy chosen in config.sh, the data for the observables correspond
 
 * We solve for the magnetic fields and turbulence using [Sympy](https://www.sympy.org/en/index.html).
 * The code for solving the expressions can be found in the [expressions](expressions) directory.
-* The [turbulence_expressions.py](expressions/turbulence_expressions.py) script solves for the turbulence parameters in terms of the observables. Subsequently, the [magnetic_expressions.py](expressions/magnetic_expressions.py) script uses this solution to find the expressions for the magnetic fields and pitch angles.
+* The [turbulence_expressions.py](expressions/turbulence_expressions.py) script solves for the turbulence parameters in terms of the observables. Subsequently, the [magnetic_expressions.py](expressions/magnetic_expressions.py) script uses this solution to find the expressions for the magnetic field strengths and pitch angles.
 
 
 
@@ -57,13 +51,13 @@ Based on the galaxy chosen in config.sh, the data for the observables correspond
 
 * The [zip_data.in](inputs/zip_data.in) input file is now substituted in the solved expressions in [model_predictions.py](src/model_predictions.py) script.
 * In this script, we numerically solve for the magnetic observables and turbulence parameters using a bunch of functions from the [helper_functions.py](src/helper_functions.py) script.
-* **Solving for h numerically:** The [_exp_analytical_data()_](src/helper_functions.py#L82) is used to substitute the values of the observables and the physical constants in the solved expression for h. We then use Scipy's fsolve routine to find the root of the polynomial equation in h. 
+* **Solving for the gas scale height h numerically:** The [_exp_analytical_data()_](src/helper_functions.py#L82) is used to substitute the values of the observables and the physical constants in the solved expression for h. We then use Scipy's fsolve routine to find the root of the polynomial equation in h. 
 * **Substituting for this solution in the other expressions:** This numerical solution is then used to obtain the turbulence and the magnetic field quantities using the [_datamaker()_](src/helper_functions.py#L94) function. This output is stored in the [outputs](outputs) directory, which is named according to the galaxy chosen and the parameter values.
 * This output file is then used in [plots_generator.py](src/plot_generator.py) to plot the desired outputs and store it as a pdf file in the [plots](plots) directory.
 
 ## Modifying the model
 * To modify the model, you can change the expressions for the turbulence and the magnetic fields in the [expressions](/expressions) directory.
-* If the model is changed, uncomment the corresponding lines in [main.sh](main.sh).
+* If the model is changed, uncomment all the commented lines of code in [main.sh](main.sh).
 
 
 
