@@ -1,4 +1,26 @@
 import numpy as np
+import pandas as pd
+import os
+
+# conversion factors
+pc_kpc = 1e3  # number of pc in one kpc
+cm_km = 1e5  # number of cm in one km
+cm_kpc = 3.086e+21  # number of centimeters in one parsec
+s_Myr = 1e+6*(365*24*60*60)  # megayears to seconds
+deg_rad = 180e0/np.pi
+arcmin_deg = 60e0
+arcsec_deg = 3600e0
+#####################################################################################################################################
+galaxy_name = os.environ.get('galaxy_name')
+base_path = os.environ.get('MY_PATH')
+
+os.chdir(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}'))
+
+vdisp_df = pd.read_csv(f'{galaxy_name}_veldisp.csv')
+kms_sigmaLOS = vdisp_df["vel disp kms"].values
+
+kpc_radius = vdisp_df["r kpc"].values
+
 
 # no RM data for m33
 

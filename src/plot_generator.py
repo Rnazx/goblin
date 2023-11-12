@@ -58,11 +58,11 @@ current_directory = str(os.getcwd())
 os.chdir(os.path.join(base_path,'outputs'))
 
 with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
-    kpc_r, h_f, l_f, u_f, cs_f, alphak_f, tau_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
+    kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
         f)
-# with open('errors_quan.pickle', 'rb') as f:
-#     h_err, l_err, u_err, cs_err, alphak_err, tau_err, biso_err, bani_err, Bbar_err, tanpB_err, tanpb_err = pickle.load(
-#         f)
+with open('errors.out', 'rb') as f:
+    h_err, l_err, u_err, cs_err, alphak_err, tau_err, taur_err, biso_err, bani_err, Bbar_err, tanpB_err, tanpb_err, dkdc_err = pickle.load(
+        f)
 os.chdir(os.path.join(base_path,'inputs'))
 
 with open('zip_data.in', 'rb') as f:
@@ -70,27 +70,28 @@ with open('zip_data.in', 'rb') as f:
 
 #######################################################################################################################################
 
-# dat_u = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS, kpc_r, method='linear',
-#                  fill_value=nan, rescale=False)*1e+5
-# dat_u_warp = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS_warp, kpc_r, method='linear',
-#                  fill_value=nan, rescale=False)*1e+5
-
+dat_u = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS, kpc_r, method='linear',
+                 fill_value=nan, rescale=False)*1e+5
+try:
+    dat_u_warp = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS_warp, kpc_r, method='linear',
+                    fill_value=nan, rescale=False)*1e+5
+except NameError:
+    pass
 os.chdir(current_directory)
 
 from helper_functions import pitch_angle_integrator
 
-pB, po = pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
-                                   Bbar_f, bani_f)
+pB, po, pb, pB_err, po_err, pb_err = pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
+                                   Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err)
 
 G_scal_Bbartot = np.sqrt(biso_f**2 + bani_f**2 + Bbar_f**2)
 G_scal_Bbarreg = Bbar_f
 G_scal_Bbarord = np.sqrt(bani_f**2 + Bbar_f**2)
 
-print(G_scal_Bbartot*1e6)
 
-# G_scal_Bbartot_err = np.sqrt((biso_err*biso_f )**2+ (bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbartot
-# G_scal_Bbarreg_err = Bbar_err
-# G_scal_Bbarord_err = np.sqrt((bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbarord
+G_scal_Bbartot_err = np.sqrt((biso_err*biso_f )**2+ (bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbartot
+G_scal_Bbarreg_err = Bbar_err
+G_scal_Bbarord_err = np.sqrt((bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbarord
 
 m = 2
 dm = 2.5
@@ -124,7 +125,7 @@ def axis_pars(ax):
     ax.legend(fontsize=lfs, frameon=False, handlelength=4, ncol=1, prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=0.9, handletextpad=0.7, columnspacing=0.7)
     
-def fill_error(ax, quan_f, quan_err, color = 'red', alpha = 0.2, error_exists = False):
+def fill_error(ax, quan_f, quan_err, color = 'red', alpha = 0.2, error_exists = True):
     if error_exists:
         ax.fill_between(kpc_r, (quan_f+quan_err), (quan_f-quan_err)
                         , alpha=alpha, edgecolor='k', facecolor=color, where = None, interpolate=True)
@@ -204,7 +205,7 @@ except NameError:
     
 try:
     ax[i].plot(kpc_r, dat_u/cm_km, 
-                c='y', linestyle='--', label='Without warp',alpha = 1,marker='*',mfc='y'
+                c='y', linestyle='--', label='vel disp',alpha = 1,marker='*',mfc='y'
     ,mec='k',mew=1, markersize = 7)
     ax[i].plot(kpc_r, dat_u_warp/cm_km, 
                 c='tab:cyan',  linestyle='dashdot', label='With warp', alpha = 0.3,marker='*',mfc='tab:cyan'
@@ -289,7 +290,7 @@ j = 0
 omega = Symbol('\Omega')
 kalpha = Symbol('K_alpha')
 calpha = Symbol('C_alpha')
-
+tau_f = taue_f
 omt = datamaker(omega, data_pass, h_f, tau_f)*tau_f
 kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f)*(h_f/(tau_f*u_f))
 
@@ -321,6 +322,10 @@ ax[i][j].plot(kpc_r, 1*np.ones(len(kpc_r)))
 ax[i][j].set_xlabel('Radius(kpc)', fontsize=fs)
 ax[i][j].set_ylabel(r'$D_k/D_c$',  fontsize=fs)
 axis_pars(ax[i][j])
+try:
+    fill_error(ax[i][j], dkdc_f,dkdc_err, 'tab:orange', 0.5)
+except NameError:
+    pass
 
 j = 0
 ax[i][j].plot(kpc_r, (((np.pi**2)*(tau_f*(u_f**2))/3*(np.sqrt(dkdc_f)-1)/(4*h_f**2))**(-1))/

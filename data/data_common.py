@@ -29,8 +29,9 @@ galaxy_name = os.environ.get('galaxy_name')
 base_path = os.environ.get('MY_PATH')
 # l = ['m31','m33','m51', 'ngc6946']
 # for galaxy_name in l:
-print(galaxy_name)
+
 os.chdir(os.path.join(base_path, 'data','model_data', f'{galaxy_name}_data'))
+
 raw_data = pd.read_csv(f'combined_data_{galaxy_name}.csv', skiprows=1)
 corrections = pd.read_csv(f'correction_data_{galaxy_name}.csv', skiprows=1, index_col=0)
 
@@ -70,16 +71,19 @@ kpc_r = radii_df[coarsest_radii_mask].to_numpy()
 interpolated_df = df_interpolation(raw_data,radii_df, kpc_r)
 interpolated_df = molfrac_to_H2(interpolated_df)
 add_temp(temp_fit,interpolated_df)
-print(interpolated_df)
 nan_mask = np.isnan(interpolated_df)
 interpolated_df = interpolated_df[~(nan_mask.sum(axis=1)>0)]
 #interpolated_df.dropna()
 # Changed for m51 and ngc6946
+if galaxy_name == 'm31' or galaxy_name == 'm33':
+    m_to_gconv = 1e3
+else:
+    m_to_gconv = 1
 conv_factors=np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), 1,cm_km/cm_kpc,
-            g_Msun/((s_Myr)*(cm_pc**2)),1])
+            g_Msun/((s_Myr*m_to_gconv)*(cm_pc**2)),1])
 interpolated_df = interpolated_df*conv_factors
 #interpolated_df= replace_conversion(interpolated_df, 'kpc', 'cm')
 #interpolated_df= replace_conversion(interpolated_df, 'kms', 'cms')
-#print(interpolated_df)
+print(interpolated_df)
 os.chdir(os.path.join(base_path, 'data'))
 interpolated_df.to_csv('data_interpolated.csv', index = False)

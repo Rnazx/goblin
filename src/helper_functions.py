@@ -155,23 +155,29 @@ def root_finder(h_val, h_init=7e+25):
 #####################################################################################################
 
 
-def scal_helper(express, data_pass, observable=zet, _range=np.linspace(1, 5000, 50)):
+def scal_helper(express, data_pass, observable=zet, n_points=50):
     express = express.subs(const).simplify(force=True)
     sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = data_pass[0]
-    val_subs = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
+    val_subs_i = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = data_pass[-1]
+    val_subs_f = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = [sum(y) / len(y) for y in zip(*data_pass)]
+    val_subs_avg = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
                 omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
     try:
-        #val_subs.pop(observable)
-        obs_val = (val_subs.pop(observable))*_range
+        val_subs_avg.pop(observable)
+        obs_val = np.linspace(val_subs_i.pop(observable),val_subs_f.pop(observable), n_points)
     except ValueError:
         print('Observable does not exist!')
-    exp = express.evalf(subs=val_subs)
+    exp = express.evalf(subs=val_subs_avg)
     return obs_val, np.array([exp.evalf(subs={observable: o}) for o in obs_val])
 
 
-def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=None, _range=np.linspace(1, 5000, 200), init_h=7e+20):
+def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=None, n_points=200, init_h=7e+20):
     def scal_dat(quan, data_pass, h_f, tau_f=None, alphak_f=None):
-        quan_val = scal_helper(quan, data_pass, observable, _range)[1]
+        quan_val = scal_helper(quan, data_pass, observable, n_points)[1]
         if tau_f is None:
             tau_f = np.ones(len(h_f))
         if alphak_f is None:
@@ -180,7 +186,7 @@ def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=
             Bbar_in = np.array([quan_val[i].evalf(subs={h: hf, tau: tauf, alphak: alphakf}) for i, (
             hf, tauf, alphakf) in enumerate(zip(h_f, tau_f, alphak_f))])
             return np.float64(np.abs(Bbar_in))
-    obs_val, h_val = scal_helper(h_exp, data_pass, observable, _range)
+    obs_val, h_val = scal_helper(h_exp, data_pass, observable, n_points)
     h_scal = root_finder(h_val, init_h)
     if tau_exp is not None:
         tau_scal = scal_dat(tau_exp, data_pass, h_scal)
@@ -193,17 +199,18 @@ def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=
     quan_f = scal_dat(quan_exp, data_pass, h_scal, tau_scal, alphak_scal)
     # pg, cov = curve_fit(f=power_law, xdata=obs_val, ydata=quan_f, p0=np.asarray([10**5,-1]))
     # perr = np.sqrt(np.diag(cov))
+    
     pg = np.mean(
         np.gradient(np.log(np.abs(quan_f)))/np.gradient(np.log(obs_val)))
     return obs_val, quan_f, pg #[1], perr[1]
 
 ####################################################################################################################################################################################
 
-def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f):
+def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err):
     pB = np.arctan(-tanpB_f)
-    #pB_err = -tanpB_err/(1+tanpB_f**2)
-    pbb = np.arctan(tanpb_f)
-    #pbb_err = tanpb_err/(1+tanpb_f**2)
+    pB_err = -tanpB_err/(1+tanpB_f**2)
+    pb = np.arctan(tanpb_f)
+    pb_err = tanpb_err/(1+tanpb_f**2)
     # Old Expression
     # pbo = (1/2)*((1+(2*Bbar_f*bani_f*np.cos(pbb-pB))/
     #             (bani_f**2+Bbar_f**2))*np.arctan((Bbar_f*np.sin(pB) + bani_f*np.sin(pbb))/
@@ -231,14 +238,14 @@ def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f):
         return (pogen(b, B, pb+h, pB, s)-pogen(b, B, pb-h, pB, s))/(2*h)
 
     def integrator(fn, interval = 1e+3):
-        return np.array([quad(fn, -interval, interval, args=(Bbar_f[i], pbb[i], pB[i], bani_f[i]),
+        return np.array([quad(fn, -interval, interval, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
                 points=[-interval*brms, interval*brms])[0] for i in range(len(kpc_r))])
-    pog = integrator(pogen)
+    po = integrator(pogen)
 
     inte = 1e+3
-    # pog_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pbb[i], pB[i], bani_f[i]),
-    #             points=[-inte*brms, inte*brms])[1] for i in range(len(kpc_r))]) 
-    # pog_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
-    #                 +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pbb_err)**2)
+    po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+                points=[-inte*brms, inte*brms])[1] for i in range(len(kpc_r))]) 
+    po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
+                    +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pb_err)**2)
     
-    return pB, pog
+    return pB, po, pb, pB_err, po_err, pb_err

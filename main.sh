@@ -20,7 +20,7 @@ python model_predictions.py
 #python scale_exponents.py
 
 #Error aprroximation
-#python error_approximation.py
+python error_approximation.py
 
 #Plotting
 python plot_generator.py
