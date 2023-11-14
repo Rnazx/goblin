@@ -57,7 +57,7 @@ current_directory = str(os.getcwd())
 
 os.chdir(os.path.join(base_path,'outputs'))
 
-with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
+with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
     kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
         f)
 with open('errors.out', 'rb') as f:
@@ -136,11 +136,11 @@ def fill_error(ax, quan_f, quan_err, color = 'red', alpha = 0.2, error_exists = 
 os.chdir(os.path.join(base_path,'plots'))
 
 from matplotlib.backends.backend_pdf import PdfPages
-PDF = PdfPages(f'{galaxy_name}_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+str(
+PDF = PdfPages(f'{galaxy_name}_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(
       params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.pdf')#('plots_model'+str(model_no)+let+'t_vary_'+'ca_'+str(ca)+'rk_'+str(rk)+'z_'+str(z.mean())+'.pdf')
 
 fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(7, 10), tight_layout=True)
-fig.suptitle(r'$C_\alpha$ = '+str(params[r'C_\alpha'])+r'    $R_\kappa$ = '+str(params[r'R_\kappa'])+
+fig.suptitle(r'$C_\alpha$ = '+str(params[r'C_\alpha'])+r'    $K$ = '+str(params[r'K'])+
              r'    $\zeta$ = '+str(params[r'\zeta'])+r'    $\psi$ = '+str(params[r'\psi'])+r'    $\beta$ = '+str(params[r'\beta']), weight = 15)
 i = 0
 ax[i].plot(kpc_r, h_f*pc_kpc/cm_kpc, c='r', linestyle='-', mfc='k',

@@ -11,7 +11,7 @@ current_directory = str(os.getcwd())
 #kpc_r, h_f, l_f, u_f, cs_f, alphak_f, tau_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f, dkdc_f
 os.chdir(os.path.join(base_path,'outputs'))
 
-with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+
+with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+
           str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
                 model_f = pickle.load(f)
 
@@ -20,7 +20,7 @@ os.chdir(os.path.join(base_path,'inputs'))
 with open('zip_data.in', 'rb') as f:
     kpc_r, data_pass = pickle.load(f)
 
-exps = np.load('scal_exponents_supersonic.npy')
+exps = np.load('scal_exponents.npy')
 r = kpc_r.size
 
 # dat_sigmatot, dat_sigma, dat_sigmasfr, dat_q, dat_omega, zet, T_tb, psi, bet, ca, rk, mu = (
@@ -58,7 +58,7 @@ err_quantities = model_f[1:]*relerr_quan
 # os.chdir(current_directory)
 #print(err_quantities)
 os.chdir(os.path.join(base_path,'outputs'))
-with open('errors_supersonic.out', 'wb') as f:
+with open('errors.out', 'wb') as f:
     pickle.dump(err_quantities, f)
 print('Found the errors from the scaling relations')
 # plt.errorbar(kpc_r, u_f/cm_km, err_h/cm_km, c='r', linestyle='-',ms=2, mew=2, capsize=2,

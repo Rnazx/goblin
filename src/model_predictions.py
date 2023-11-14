@@ -84,7 +84,7 @@ for i,hi in enumerate(h_init_trys):
 
         os.chdir(os.path.join(base_path,'outputs'))
 
-        with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'wb') as f:
+        with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'wb') as f:
             pickle.dump(mag_obs, f)
         break
 
