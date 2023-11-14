@@ -38,6 +38,7 @@ bet = Symbol('beta')
 alphak = Symbol('alpha_k')
 Gamma = Symbol('Gamma')
 A = Symbol('A')
+K = Symbol('K')
 
 # Defining the general parameters
 u = Symbol('u')
@@ -69,7 +70,7 @@ Ralpha = alphak*h/eta
 Romega = -q*omega*h**2/eta
 Dk = Ralpha*Romega
 Dc = -(pi**5)/32
-Bbar = (pi*Beq*l*(Rk*(Dk/Dc-1))**(0.5))/h
+Bbar = K*(pi*Beq*l*(Rk*(Dk/Dc-1))**(0.5))/h
 Bbar = simplify(Bbar)
 # Bbar = Bbar.powsimp(force=True)
 
