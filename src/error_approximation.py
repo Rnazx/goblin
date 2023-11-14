@@ -1,12 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from sympy import *
-from fractions import Fraction
 import pickle
 import os
-from matplotlib.ticker import FormatStrFormatter
-import sys
-from scipy.interpolate import griddata
 from helper_functions import parameter_read
 
 base_path = os.environ.get('MY_PATH')
@@ -26,7 +20,7 @@ os.chdir(os.path.join(base_path,'inputs'))
 with open('zip_data.in', 'rb') as f:
     kpc_r, data_pass = pickle.load(f)
 
-exps = np.load('scal_exponents.npy')
+exps = np.load('scal_exponents_supersonic.npy')
 r = kpc_r.size
 
 # dat_sigmatot, dat_sigma, dat_sigmasfr, dat_q, dat_omega, zet, T_tb, psi, bet, ca, rk, mu = (
@@ -64,7 +58,7 @@ err_quantities = model_f[1:]*relerr_quan
 # os.chdir(current_directory)
 #print(err_quantities)
 os.chdir(os.path.join(base_path,'outputs'))
-with open('errors.out', 'wb') as f:
+with open('errors_supersonic.out', 'wb') as f:
     pickle.dump(err_quantities, f)
 print('Found the errors from the scaling relations')
 # plt.errorbar(kpc_r, u_f/cm_km, err_h/cm_km, c='r', linestyle='-',ms=2, mew=2, capsize=2,
