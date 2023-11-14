@@ -37,6 +37,7 @@ bet = Symbol('beta')
 alphak = Symbol('alpha_k')
 Gamma = Symbol('Gamma')
 A = Symbol('A')
+K = Symbol('K')
 
 
 # Defining the general parameters
@@ -55,11 +56,11 @@ cgs_G = 6.674e-8  # gravitational constant in cgs units
 g_mH = 1.6736e-24  # mass of hydrogen atom in grams
 cgs_kB = 1.3807e-16  # boltzmann constant in cgs units
 
-gval, clval, xioval, mstarval, deltaval, e51val, kaval, Gammaval = tuple(
+gval, clval, xioval, mstarval, deltaval, e51val, kaval, Gammaval, Rkval = tuple(
     np.genfromtxt(os.path.join(base_path,'inputs','constants.in'), delimiter='=', dtype=np.float64)[:, -1])
 
 const = [(boltz, cgs_kB), (mh, g_mH), (G, cgs_G), (gamma, gval),
-         (cl, clval), (xio, xioval), (mstar, mstarval*g_Msun), (delta, deltaval), (E51, e51val), (kalpha, kaval), (Gamma, Gammaval)]
+         (cl, clval), (xio, xioval), (mstar, mstarval*g_Msun), (delta, deltaval), (E51, e51val), (kalpha, kaval), (Gamma, Gammaval),(Rk, Rkval)]
 
 ######################################################################################################################
 
@@ -110,7 +111,7 @@ def exp_analytical_data(express, data_pass):
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
     exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a in data_pass])
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a in data_pass])
 
     return exp
 
@@ -157,15 +158,15 @@ def root_finder(h_val, h_init=7e+25):
 
 def scal_helper(express, data_pass, observable=zet, n_points=50):
     express = express.subs(const).simplify(force=True)
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = data_pass[0]
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = data_pass[0]
     val_subs_i = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = data_pass[-1]
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = data_pass[-1]
     val_subs_f = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, rk, m, a = [sum(y) / len(y) for y in zip(*data_pass)]
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
+    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = [sum(y) / len(y) for y in zip(*data_pass)]
     val_subs_avg = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, Rk: rk, mu: m, A:a}
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
     try:
         val_subs_avg.pop(observable)
         obs_val = np.linspace(val_subs_i.pop(observable),val_subs_f.pop(observable), n_points)
