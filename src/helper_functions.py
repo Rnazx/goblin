@@ -156,29 +156,19 @@ def root_finder(h_val, h_init=7e+25):
 #####################################################################################################
 
 
-def scal_helper(express, data_pass, observable=zet, n_points=50):
+def scal_helper(express, data_pass, n_points=50):
     express = express.subs(const).simplify(force=True)
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = data_pass[0]
-    val_subs_i = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = data_pass[-1]
-    val_subs_f = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
-    sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a = [sum(y) / len(y) for y in zip(*data_pass)]
-    val_subs_avg = {sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}
-    try:
-        val_subs_avg.pop(observable)
-        obs_val = np.linspace(val_subs_i.pop(observable),val_subs_f.pop(observable), n_points)
-    except ValueError:
-        print('Observable does not exist!')
-    exp = express.evalf(subs=val_subs_avg)
-    return obs_val, np.array([exp.evalf(subs={observable: o}) for o in obs_val])
+    range_data = [np.linspace(dat_start,dat_end, n_points)
+                  for dat_start,dat_end in zip(data_pass[0], data_pass[-1])]
+
+    return range_data, np.array([exp.evalf(subs={{sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
+                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}}) 
+                for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a in range_data])
 
 
-def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=None, n_points=200, init_h=7e+20):
+def scal_finder(h_exp, quan_exp, data_pass, tau_exp=None, alpha_exp=None, n_points=200, init_h=7e+20):
     def scal_dat(quan, data_pass, h_f, tau_f=None, alphak_f=None):
-        quan_val = scal_helper(quan, data_pass, observable, n_points)[1]
+        quan_val = scal_helper(quan, data_pass, n_points)[1]
         if tau_f is None:
             tau_f = np.ones(len(h_f))
         if alphak_f is None:
@@ -187,7 +177,7 @@ def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=
             Bbar_in = np.array([quan_val[i].evalf(subs={h: hf, tau: tauf, alphak: alphakf}) for i, (
             hf, tauf, alphakf) in enumerate(zip(h_f, tau_f, alphak_f))])
             return np.float64(np.abs(Bbar_in))
-    obs_val, h_val = scal_helper(h_exp, data_pass, observable, n_points)
+    range_data, h_val = scal_helper(h_exp, data_pass, n_points)
     h_scal = root_finder(h_val, init_h)
     if tau_exp is not None:
         tau_scal = scal_dat(tau_exp, data_pass, h_scal)
@@ -200,10 +190,12 @@ def scal_finder(h_exp, quan_exp, observable, data_pass, tau_exp=None, alpha_exp=
     quan_f = scal_dat(quan_exp, data_pass, h_scal, tau_scal, alphak_scal)
     # pg, cov = curve_fit(f=power_law, xdata=obs_val, ydata=quan_f, p0=np.asarray([10**5,-1]))
     # perr = np.sqrt(np.diag(cov))
-    
-    pg = np.mean(
-        np.gradient(np.log(np.abs(quan_f)))/np.gradient(np.log(obs_val)))
-    return obs_val, quan_f, pg #[1], perr[1]
+    power_obs = []
+    for r,q in zip(range_data,quan_f):
+        pg = np.mean(
+            np.gradient(np.log(np.abs(q)))/np.gradient(np.log(r)))
+        power_obs.append(pg)
+    return obs_val, quan_f, power_obs #[1], perr[1]
 
 ####################################################################################################################################################################################
 
@@ -223,8 +215,8 @@ def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tan
     def pogen(b, B, pb, pB, s):
         return (np.exp(-b**2/(2*s**2))/
                 (np.sqrt(2*(np.pi))*s))*(1+(2*B*b*np.cos(pb-pB))/
-                                        (b**2 + B**2))*np.arctan((B*np.sin(pB) + b*np.sin(pb))/
-                                                                                                ((B*np.cos(pB)) + b*np.cos(pb)))
+                            (b**2 + B**2))*np.arctan((B*np.sin(pB) + b*np.sin(pb))/
+                                                        ((B*np.cos(pB)) + b*np.cos(pb)))
     brms = np.sqrt(np.average(bani_f**2))
 
     h = 1e-8

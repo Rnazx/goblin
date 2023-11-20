@@ -7,8 +7,8 @@ python data_common.py
 
 #Solve all the expressions in terms of the scale height h
 cd ../expressions
-# python turbulence_expressions.py
-# python magnetic_expressions.py
+python turbulence_expressions.py
+python magnetic_expressions.py
 
 cd ../src
 #Change the data into the preffered format for Sympy

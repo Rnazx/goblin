@@ -36,10 +36,10 @@ quantities = [hg, l, u, cs, alphak1, taue, taur, biso, bani, Bbar, tanpB, tanpb,
 #kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f, dkdc_f, alpham_f, omt, kah
 exps = []
 for i,quan in enumerate(quantities):
-    exps_quan = np.array([scal_finder(hg, quan, obs, data_pass, taue, alphak1, 100, 1e+25)[2] for obs in observables])
+    exps_quan = scal_finder(hg, quan, data_pass, taue, alphak1, 100, 1e+25)[2] 
     exps.append(exps_quan)
 
-np.save('scal_exponents',np.array(exps))
+#np.save('scal_exponents',np.array(exps))
 print('The scaling relations are calculated')
-# print(np.load('scal_exponents.npy'))
-# print(np.array(exps))
+print(np.load('scal_exponents.npy'))
+print(np.array(exps))
