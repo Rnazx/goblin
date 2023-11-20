@@ -60,9 +60,15 @@ os.chdir(os.path.join(base_path,'outputs'))
 with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
     kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
         f)
-with open('errors.out', 'rb') as f:
-    h_err, l_err, u_err, cs_err, alphak_err, tau_err, taur_err, biso_err, bani_err, Bbar_err, tanpB_err, tanpb_err, dkdc_err = pickle.load(
-        f)
+
+with open('errors_subsonic.out', 'rb') as f:
+        subsonic_errors= pickle.load(f)
+with open('errors_supersonic.out', 'rb') as f:
+        supersonic_errors= pickle.load(f)
+h_err, l_err, u_err, cs_err, alphak_err, tau_err, \
+        taur_err, biso_err, bani_err, Bbar_err, \
+                tanpB_err, tanpb_err, dkdc_err = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
+
 os.chdir(os.path.join(base_path,'inputs'))
 
 with open('zip_data.in', 'rb') as f:

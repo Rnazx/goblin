@@ -153,49 +153,6 @@ def root_finder(h_val, h_init=7e+25):
     h_f = np.array(h_f)
     return h_f
 
-#####################################################################################################
-
-
-def scal_helper(express, data_pass, n_points=50):
-    express = express.subs(const).simplify(force=True)
-    range_data = [np.linspace(dat_start,dat_end, n_points)
-                  for dat_start,dat_end in zip(data_pass[0], data_pass[-1])]
-
-    return range_data, np.array([exp.evalf(subs={{sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs,
-                omega: oms, zet: zets, T: t, psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}}) 
-                for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a in range_data])
-
-
-def scal_finder(h_exp, quan_exp, data_pass, tau_exp=None, alpha_exp=None, n_points=200, init_h=7e+20):
-    def scal_dat(quan, data_pass, h_f, tau_f=None, alphak_f=None):
-        quan_val = scal_helper(quan, data_pass, n_points)[1]
-        if tau_f is None:
-            tau_f = np.ones(len(h_f))
-        if alphak_f is None:
-            return np.array([np.float64(quan_val[i].evalf(subs={h: hf, tau: tauf})) for i, (hf, tauf) in enumerate(zip(h_f, tau_f))])
-        else:
-            Bbar_in = np.array([quan_val[i].evalf(subs={h: hf, tau: tauf, alphak: alphakf}) for i, (
-            hf, tauf, alphakf) in enumerate(zip(h_f, tau_f, alphak_f))])
-            return np.float64(np.abs(Bbar_in))
-    range_data, h_val = scal_helper(h_exp, data_pass, n_points)
-    h_scal = root_finder(h_val, init_h)
-    if tau_exp is not None:
-        tau_scal = scal_dat(tau_exp, data_pass, h_scal)
-    else:
-        tau_scal = None
-    if alpha_exp is not None:
-        alphak_scal = scal_dat(alpha_exp, data_pass, h_scal, tau_scal)
-    else:
-        alphak_scal = None
-    quan_f = scal_dat(quan_exp, data_pass, h_scal, tau_scal, alphak_scal)
-    # pg, cov = curve_fit(f=power_law, xdata=obs_val, ydata=quan_f, p0=np.asarray([10**5,-1]))
-    # perr = np.sqrt(np.diag(cov))
-    power_obs = []
-    for r,q in zip(range_data,quan_f):
-        pg = np.mean(
-            np.gradient(np.log(np.abs(q)))/np.gradient(np.log(r)))
-        power_obs.append(pg)
-    return obs_val, quan_f, power_obs #[1], perr[1]
 
 ####################################################################################################################################################################################
 

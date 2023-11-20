@@ -1,5 +1,5 @@
 import matplotlib
-from helper_functions import datamaker, parameter_read
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy import *
@@ -34,6 +34,8 @@ h = Symbol('h')
 #reading the parameters
 base_path = os.environ.get('MY_PATH')
 galaxy_name = os.environ.get('galaxy_name')
+sys.path.append(os.path.join(base_path,'src'))
+from helper_functions import datamaker, parameter_read
 
 params = parameter_read(os.path.join(base_path,'inputs','parameter_file.in'))
 sys.path.append(os.path.join(base_path,'data','supplementary_data', galaxy_name))
@@ -114,13 +116,13 @@ def fill_error(ax, quan_f, quan_err, color = 'red', alpha = 0.2, error_exists = 
 
 os.chdir(os.path.join(base_path,'outputs'))
 
-with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'rk_'+str(params[r'R_\kappa'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
+with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
     kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
         f)
 
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 10), tight_layout=True)
-fig.suptitle(r'$C_\alpha$ = '+str(params[r'C_\alpha'])+r'    $R_\kappa$ = '+str(params[r'R_\kappa'])+
+fig.suptitle(r'$C_\alpha$ = '+str(params[r'C_\alpha'])+r'    $K$ = '+str(params[r'K'])+
              r'    $\zeta$ = '+str(params[r'\zeta'])+r'    $\psi$ = '+str(params[r'\psi'])+r'    $\beta$ = '+str(params[r'\beta']), weight = 15)
 i = 0
 ax.plot(kpc_r, h_f*pc_kpc/cm_kpc, c='r', linestyle='-', mfc='k',
@@ -135,13 +137,6 @@ ax.plot(kpc_r, l_f*pc_kpc/cm_kpc, c='g',
 # ax.plot(kpc_r, datamaker(lsn , data_pass, h_f, tau_f)*pc_kpc/cm_kpc,c = 'y',linestyle='--',mfc='k',mec='k', marker='o')
 ax.axhline(y=100, color='black', linestyle='--', alpha = 0.2)
 #ax.set_yticks(list(plt.yticks()[0])+[100])
-with open('errors.out', 'rb') as f:
-    h_err, l_err, u_err, cs_err, alphak_err, tau_err, taur_err, biso_err, bani_err, Bbar_err, tanpB_err, tanpb_err, dkdc_err = pickle.load(
-        f)
-try:
-    fill_error(ax, h_f*pc_kpc/cm_kpc, h_err*pc_kpc/cm_kpc)
-except NameError:
-    pass
 with open('errors_subsonic.out', 'rb') as f:
     h_err, l_err, u_err, cs_err, alphak_err, tau_err, taur_err, biso_err, bani_err, Bbar_err, tanpB_err, tanpb_err, dkdc_err = pickle.load(
         f)
@@ -161,8 +156,6 @@ axis_pars(ax)
     
 #ax.set_xlabel(r'Radius (kpc)', fontsize=fs)
 ax.set_ylabel(r'Length scale (pc)', fontsize=fs)
-
-
 
 plt.show()
 os.chdir(current_directory)
