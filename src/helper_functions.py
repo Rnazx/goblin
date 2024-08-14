@@ -4,56 +4,57 @@ import inspect
 from scipy.optimize import curve_fit, fsolve, root
 from scipy.integrate import quad
 import os
+import matplotlib.patches as patches
 
 ############################################################################################################################
 # Defining the Observables
-q = Symbol('q')
-omega = Symbol('\Omega')
-sigma = Symbol('\Sigma')
+q        = Symbol('q')
+omega    = Symbol('\Omega')
+sigma    = Symbol('\Sigma')
 sigmatot = Symbol('Sigma_tot')
 sigmasfr = Symbol('Sigma_SFR')
-T = Symbol('T')
+T        = Symbol('T')
 
 
 # Defining the Constants
-calpha = Symbol('C_alpha')
-gamma = Symbol('gamma')
-boltz = Symbol('k_B')
-mu = Symbol('mu')
-mh = Symbol('m_H')
-G = Symbol('G')
-xio = Symbol('xi_0')
-delta = Symbol('\delta')
-mstar = Symbol('m_*')
-cl = Symbol('C_l')
-kappa = Symbol('kappa')
-mach = Symbol('M')
-E51 = Symbol('E_51')
-Rk = Symbol('R_k')
-zet = Symbol('zeta')
-psi = Symbol('psi')
-kalpha = Symbol('K_alpha')
-bet = Symbol('beta')
-alphak = Symbol('alpha_k')
-Gamma = Symbol('Gamma')
-A = Symbol('A')
-K = Symbol('K')
+calpha   = Symbol('C_alpha')
+gamma    = Symbol('gamma')
+boltz    = Symbol('k_B')
+mu       = Symbol('mu')
+mu_prime = Symbol('mu_prime')
+mh       = Symbol('m_H')
+G        = Symbol('G')
+xio      = Symbol('xi_0')
+delta    = Symbol('\delta')
+mstar    = Symbol('m_*')
+cl       = Symbol('C_l')
+kappa    = Symbol('kappa')
+mach     = Symbol('M')
+E51      = Symbol('E_51')
+Rk       = Symbol('R_k')
+zet      = Symbol('zeta')
+psi      = Symbol('psi')
+kalpha   = Symbol('K_alpha')
+bet      = Symbol('beta')
+alphak   = Symbol('alpha_k')
+Gamma    = Symbol('Gamma')
+A        = Symbol('A')
+K        = Symbol('K')
 
 
 # Defining the general parameters
-u = Symbol('u')
+u   = Symbol('u')
 tau = Symbol('tau')
-l = Symbol('l')
-h = Symbol('h')
-
-cs = (gamma*boltz*T/(mu*mh))**Rational(1/2)
+l   = Symbol('l')
+h   = Symbol('h')
+cs  = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 
 ###############################################################################################
 base_path = os.environ.get('MY_PATH')
 
 g_Msun = 1.989e33  # solar mass in g
-cgs_G = 6.674e-8  # gravitational constant in cgs units
-g_mH = 1.6736e-24  # mass of hydrogen atom in grams
+cgs_G  = 6.674e-8  # gravitational constant in cgs units
+g_mH   = 1.6736e-24  # mass of hydrogen atom in grams
 cgs_kB = 1.3807e-16  # boltzmann constant in cgs units
 
 gval, clval, xioval, mstarval, deltaval, e51val, kaval, Gammaval, Rkval = tuple(
@@ -111,7 +112,7 @@ def exp_analytical_data(express, data_pass):
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
     exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a in data_pass])
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime: mu_prime, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, mu_prime, a in data_pass])
 
     return exp
 
@@ -161,13 +162,6 @@ def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tan
     pB_err = -tanpB_err/(1+tanpB_f**2)
     pb = np.arctan(tanpb_f)
     pb_err = tanpb_err/(1+tanpb_f**2)
-    # Old Expression
-    # pbo = (1/2)*((1+(2*Bbar_f*bani_f*np.cos(pbb-pB))/
-    #             (bani_f**2+Bbar_f**2))*np.arctan((Bbar_f*np.sin(pB) + bani_f*np.sin(pbb))/
-    #                                             ((Bbar_f*np.cos(pB)) + bani_f*np.cos(pbb)))
-    #                                                         + (1-(2*Bbar_f*bani_f*np.cos(pbb-pB))/
-    #                                                         (bani_f**2+Bbar_f**2))*np.arctan((Bbar_f*np.sin(pB) - bani_f*np.sin(pbb))/
-    #                                                                                             ((Bbar_f*np.cos(pB)) - bani_f*np.cos(pbb))))
 
     def pogen(b, B, pb, pB, s):
         return (np.exp(-b**2/(2*s**2))/
@@ -187,15 +181,127 @@ def pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tan
     def dpodpb(b, B, pb, pB, s):
         return (pogen(b, B, pb+h, pB, s)-pogen(b, B, pb-h, pB, s))/(2*h)
 
-    def integrator(fn, interval = 1e+3):
+    def integrator(fn, interval = 1e+2): #1e+3
+        for i in range(len(kpc_r)):
+            print(i,Bbar_f[i], pb[i], pB[i], bani_f[i])
         return np.array([quad(fn, -interval, interval, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
                 points=[-interval*brms, interval*brms])[0] for i in range(len(kpc_r))])
     po = integrator(pogen)
 
-    inte = 1e+3
+    inte = 1e+3 
+    # error in po due to numerical integration- given as the second element of output of quad function
     po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
                 points=[-inte*brms, inte*brms])[1] for i in range(len(kpc_r))]) 
+    
+    # error in po due to errors in the input quantities- propagated using the error propagation formula
+    # added to po_err due to integration
     po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
                     +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pb_err)**2)
     
     return pB, po, pb, pB_err, po_err, pb_err
+
+#differentiating the analytical expression
+def analytical_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err):
+    b   = Symbol('b')
+    B   = Symbol('B')
+    p_b = Symbol('p_b')
+    p_B = Symbol('p_B')
+    s   = Symbol('b_a')
+
+    pB     = np.arctan(-tanpB_f)
+    pB_err = -tanpB_err/(1+tanpB_f**2)
+    pb     = np.arctan(tanpb_f)
+    pb_err = tanpb_err/(1+tanpb_f**2)
+
+    po = (exp(-b**2/(2*s**2))/
+                    (sqrt(2*(pi))*s))*(1+(2*B*b*cos(p_b-p_B))/
+                                (b**2 + B**2))*atan((B*sin(p_B) + b*sin(p_b))/
+                                                            ((B*cos(p_B)) + b*cos(p_b)))
+
+    pogen    = lambdify([b,B, p_b, p_B, s],po)
+    dpodbani = lambdify([b,B, p_b, p_B, s],diff(po,s))
+    dpodBbar = lambdify([b,B, p_b, p_B, s],diff(po,B))
+    dpodpB   = lambdify([b,B, p_b, p_B, s],diff(po,p_B))
+    dpodpb   = lambdify([b,B, p_b, p_B, s],diff(po,p_b))
+
+    brms = np.sqrt(np.average(bani_f**2))
+    def integrator(fn, interval = 1e+2):
+        return np.array([quad(fn, -interval, interval, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+                points=[-interval*brms, interval*brms])[0] for i in range(len(kpc_r))])
+    po = integrator(pogen)
+
+    inte   = 1e+3
+    po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+                points=[-inte*brms, inte*brms])[1] for i in range(len(kpc_r))]) 
+    po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
+                    +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pb_err)**2)
+
+    return pB, po, pb, pB_err, po_err, pb_err
+
+
+# plot rectangle given four coordinates
+def plot_rectangle(ax, x1, y1, x2, y2, color):
+    ax.add_patch(patches.Rectangle((x1, y1), x2-x1, y2-y1, fill=True, color=color, alpha=0.4))
+
+def insert_averages(arr):
+    result = []
+    for i in range(len(arr) - 1):
+        # Append current element
+        result.append(arr[i])
+        # Calculate and append average of current and next element
+        average = (arr[i] + arr[i+1]) / 2
+        result.append(average)
+    # Append the last element
+    result.append(arr[-1])
+    return result
+
+def fill_error(ax, x, quan_f, quan_err, color = 'red', alpha = 0.2, error_exists = True):
+
+    # x  = kpc_r
+    y1 = quan_f + quan_err
+    y2 = quan_f - quan_err
+
+    # Insert averages
+    x = insert_averages(x)
+    
+    # divide the x list into lists of 2 adjacent elements and append it to master_x
+    master_x = []
+    for i in range(len(x) - 1):
+        master_x.append([x[i], x[i+1]])
+    
+    yo1 = []
+    yo2 = []
+    for i in range(len(y1)-1):
+        yo1.append(y1[i])
+        yo1.append(y1[i] if y1[i] > y1[i+1] else y1[i+1])
+        yo2.append(y2[i])
+        yo2.append(y2[i+1] if y2[i] > y2[i+1] else y2[i])
+    yo1.append(y1[-1])
+    yo2.append(y2[-1])
+
+    # store first and last element of each list
+    x_first   = x[0]
+    x_last    = x[-1]
+    yo1_first = yo1[0]
+    yo1_last  = yo1[-1]
+    yo2_first = yo2[0]
+    yo2_last  = yo2[-1]
+
+    # remove even indexed terms from all three lists
+    x   = [x[i] for i in range(len(x)) if i%2 != 0]
+    yo1 = [yo1[i] for i in range(len(yo1)) if i%2 != 0]
+    yo2 = [yo2[i] for i in range(len(yo2)) if i%2 != 0]
+
+    # add first and last elements to new list
+    x.insert(0, x_first)
+    x.append(x_last)
+    yo1.insert(0, yo1_first)
+    yo1.append(yo1_last)
+    yo2.insert(0, yo2_first)
+    yo2.append(yo2_last)
+
+    # fill error 
+    if error_exists:
+        ax.fill_between(x, yo1, yo2, alpha=alpha, facecolor=color, where = None, interpolate=True, edgecolor=None)  
+    else:
+        return

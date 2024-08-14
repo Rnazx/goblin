@@ -1,3 +1,6 @@
+
+####################################################################################################################
+
 import numpy as np
 import pickle
 import os
@@ -63,10 +66,3 @@ for hreg in hregs:
     with open(f'errors_{hreg}.out', 'wb') as f:
         pickle.dump(err_quantities, f)
 print('Found the errors from the scaling relations')
-# plt.errorbar(kpc_r, u_f/cm_km, err_h/cm_km, c='r', linestyle='-',ms=2, mew=2, capsize=2,
-#                   ecolor = 'y', marker='o', mfc='k', mec='k', label=r' $h$(pc)')
-
-# plt.xlabel(r'Radius (kpc)', fontsize=15)
-# plt.ylabel(r'Length scale (pc)', fontsize=15)
-# plt.legend(fontsize = 10)
-# plt.show()
