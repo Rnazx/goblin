@@ -23,18 +23,17 @@ kpc_radius = vdisp_df["r kpc"].values
 
 #####################################################################################################################################
 
-# no RM data for m33
-
 # Magnetic field data from Beck et. al. 2019 Tables 3 and 4
-G_dat_Bord = np.array([3.1,3.1])
-G_dat_Breg = np.array([1.3,2.4])
-G_dat_Btot = np.array([8.7,7.6])
+G_dat_Bord     = np.array([3.1,3.1])
+G_dat_Breg     = np.array([1.3,2.4])
+err_G_dat_Breg = 0.4*G_dat_Breg        # Beck+19 mentions 30-40% error in B_reg
+G_dat_Btot     = np.array([8.7,7.6])
 
 #ordered field pitch angle 
 #Beck+19
 po_beck19 = np.array([48,40,41,35]) * np.pi/180 #pitch angle of ordered field
 err_po_beck19 = np.array([5,5,5,6]) * np.pi/180 #error in po
-range_po=np.array([1.0,3.0,5.0,7.0,9.0]) #for po
+range_po = np.array([1.0,3.0,5.0,7.0,9.0]) #for po
 po_range_beck19 = (range_po[1:] + range_po[:-1])/2 #average of each of the intervals given in above array. contains 1 less point than above array
 
 #mean field pitch angle
@@ -42,7 +41,7 @@ po_range_beck19 = (range_po[1:] + range_po[:-1])/2 #average of each of the inter
 pb_beck19 = np.array([51,41]) * np.pi/180 #pitch angle of regular field
 err_pb_beck19 = np.array([2,2]) * np.pi/180
 mrange_endps = np.array([1.0,3.0,5.0]) #radial ranges (for B and pB) where M is used, given in table 4, Beck+19
-pb_range_beck19 = (mrange_endps[1:] + mrange_endps[:-1])/2 #average of each of the intervals given in above array. contains 1 less point than above array
+mrange = (mrange_endps[1:] + mrange_endps[:-1])/2 #average of each of the intervals given in above array. contains 1 less point than above array
 
 #scale height data
 kpc_dat_r = np.array([2.02,3.99])
