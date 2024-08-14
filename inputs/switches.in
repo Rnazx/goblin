@@ -1,3 +1,4 @@
 chem_or_claude= Claude
-incl_moldat= No
+incl_moldat= Yes
 force_kennicut_scmidt= No, sigmadata
+tau= taue 
