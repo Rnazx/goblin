@@ -5,6 +5,9 @@ export MY_PATH=$(pwd)
 # printf "Choose from the following list of galaxies \n"
 # printf "1. M31   ||   2. M33   ||   3. M51   ||   4. NGC6946   \n"
 # read galname
-# printf "You have selected $galname \n"  
+# printf "You have selected $galname \n" 
 
-export galaxy_name="m51"
+#this makes it case insensitive
+galaxy=ngc6946
+export galaxy_name=${galaxy,,}
+
