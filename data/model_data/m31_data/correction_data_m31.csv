@@ -1,10 +1,11 @@
-M31,,
-qty,distance_m31(Mpc),inclination_m31 (deg)
-sigma_tot_claude,0.785,75
-sigma_HI_chemin,0.78,77
-sigma_HI_claude,0.785,75
-v_circ_chemin,0.78,77
-v_circ_claude,0.785,75
-sigma_sfr,0.78,75
-molfrac,0.78,77.5
-final,0.78,75
+M31,,,,
+qty,distance_m31(Mpc),inclination_m31 (deg), dist_err (Mpc), incl_err (deg)
+sigma_tot_claude,0.785,75,0.025,2
+sigma_HI_chemin,0.78,77,0.025,2
+sigma_HI_claude,0.785,75,0.025,2
+v_circ_chemin,0.78,77,0.025,2
+v_circ_claude,0.785,75,0.025,2
+sigma_sfr,0.78,75,0.04,2
+molfrac,0.78,77.5,0.04,2
+final,0.78,75,0.04,2
+
