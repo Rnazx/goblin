@@ -22,6 +22,16 @@ def replace_conversion(df, substring_to_replace, replacement_string):
 
     return updated_df
 
+def get_column_indices_by_substring(dataframe, substring):
+    # Use list comprehension to get the indices of all columns with the specified substring
+    indices = [idx for idx, col in enumerate(dataframe.columns) if substring in col]
+
+    # Raise an exception or return a default value if no columns with the substring are found
+    if not indices:
+        raise ValueError(f"No columns with substring '{substring}' found in the DataFrame")
+
+    return indices
+
 def keep_substring_columns(dataframe, substring):
     # Get the columns that contain the specified substring
     filtered_columns = [col for col in dataframe.columns if substring in col]
@@ -32,12 +42,12 @@ def keep_substring_columns(dataframe, substring):
     return result_df, filtered_columns
 
 # get the next or previous column of the dataframe
-def get_adjacent_column(df, col, next = True):
+def get_adjacent_column(df, col, next = True): 
     index_of_target = df.columns.get_loc(col)
     if index_of_target < len(df.columns) - 1:
-        if next:
+        if next: #get the column right side of col
             return df.columns[index_of_target+1]
-        else:
+        else: #get the column left side of col
             return df.columns[index_of_target-1]
     else:
         print("The target column is the last column.")
@@ -68,6 +78,7 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
         iter_dist = 0
         iter_incl = 0
         for col in result_df.columns:
+            # print(iter_dist,dist_multiplier)
             if substring in col:
                 try:
                     result_df[col] = result_df[col] * dist_multiplier[iter_dist]
@@ -75,6 +86,8 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
                     result_df[col] = result_df[col] * dist_multiplier
                 iter_dist+=1
             else:
+                # print(iter_incl,incl_multiplier)
+                # print(result_df.columns)
                 try:
                     result_df[col] = result_df[col] * incl_multiplier[iter_incl]
                 except:
@@ -92,10 +105,17 @@ def incl_distance_correction(df, distance_new, distance_old, i_new, i_old):
     df = replace_conversion(df, 'arcmin', 'kpc;')
     df = replace_conversion(df, 'arcsec', 'kpc;')
     #x = df.copy()
-    #distance and inclination correction
-    df = find_and_multiply_column(df, 'kpc', distance_new/distance_old, np.cos(i_new)/np.cos(i_old))
-    
-    #print(x.compare(df))
+    col_names=df.columns
+    i=0
+    for name in col_names:
+        if 'kpc' in name:
+            df[name]=df[name]*distance_new/distance_old[i]
+        elif 'vcirc' in name:
+            df[name]=df[name]*np.sin(i_old[i])/np.sin(i_new)
+            i+=1
+        else:
+            df[name]=df[name]*np.cos(i_new)/np.cos(i_old[i])
+            i+=1
     return df
 
 def molfrac_to_H2(df):
@@ -135,6 +155,7 @@ def vcirc_to_qomega(df):
         df.insert(index_of_vcirc, '\Omega', Om)
         df.insert(index_of_vcirc, 'r omega', r)
         df.insert(index_of_vcirc, 'q', q)
+        # if vcirc_remove:
         df.drop(columns=vcirc_data[1], inplace=True)
         return df
-
+        
