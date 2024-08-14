@@ -1,10 +1,10 @@
-M33,,
-qty,distance_m33 (Mpc),inclination_m33 (deg)
-sigma_tot_up52,0.84,52
-sigma_tot_up72,0.84,52
-sigma_HI,0.84,52
-sigma_H2,0.84,56
-v_circ_kam,0.84,52
-v_circ_koch,0.84,55
-sigma_sfr,0.84,54
-final,0.84,56
+M33,,,,
+qty,distance_m33 (Mpc),inclination_m33 (deg), dist_err (Mpc), incl_err (deg)
+sigma_tot_up52,0.84,52,0.01,3
+sigma_tot_up72,0.84,52,0.01,3
+sigma_HI,0.84,52,0.01,3
+sigma_H2,0.84,56,0.06,1
+v_circ_kam,0.84,52,0.01,3
+v_circ_Koch,0.84,55,0.01,2
+sigma_sfr,0.84,54,0.01,1
+final,0.84,56,0.01,1

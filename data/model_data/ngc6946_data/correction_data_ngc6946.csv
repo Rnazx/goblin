@@ -1,8 +1,8 @@
-NGC 6946,,
-qty,distance_ngc6946 (Mpc),inclination_ngc6946 (deg)
-sigma_tot,5.5,30
-sigma_HI,5.9,33
-sigma_H2,5.9,33
-v_circ,5.5,30
-sigma_sfr,5.9,33
-final,7.72,38
+NGC 6946,,,,
+qty,distance_ngc6946 (Mpc),inclination_ngc6946 (deg), dist_err (Mpc), incl_err (deg)
+sigma_tot,5.5,30,0.32,2
+sigma_HI,5.9,33,0.32,2
+sigma_H2,5.9,33,0.32,2
+v_circ,5.5,30,0.32,2
+sigma_sfr,5.9,33,0.32,2
+final,7.72,38,0.32,2

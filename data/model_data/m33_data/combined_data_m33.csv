@@ -1,5 +1,5 @@
 sigma_tot_up52,,sigma_tot_up72,,sigma_HI,,sigma_H2,,vcirc_kam,,vcirc_koch,,sigma_sfr,
-r kpc,sigma tot up52,r kpc,sigma tot up72,r kpc,sigma HI,r kpc,sigma H2,r kpc,kms_vcirc_Kam,arcsec_r,kms_vcirc_Koch,r kpc,sigma sfr
+r kpc,sigma_tot_up52,r kpc,sigma_tot_up72,r kpc,sigma_HI,r kpc,sigma_H2,r kpc,kms_vcirc_Kam,arcsec_r,kms_vcirc_Koch,r kpc,sigma_sfr
 0,270.3979182,0,374.3971175,0.488692191,7.89,0.2671,9.557,0.488692191,42,9,1.58,0.3715,21.11
 0.0019998,270.094729,0.0019998,373.9773171,0.977384381,7.73,0.7504,8.997,0.977384381,58.8,27,11.88,0.6153,15.96
 0.0039996,269.7918797,0.0039996,373.5579873,1.466076572,8.26,1.257,4.844,1.466076572,69.4,45,22.71,0.8592,15.01
