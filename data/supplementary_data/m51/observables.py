@@ -25,12 +25,15 @@ kpc_radius = vdisp_df["r"].values
 # Magnetic field data from Beck et. al. 2019 Tables 3 and 4
 # *(8.5/7.6) is correction for distance to M51 chosen
 # plotted against range_pb
-G_dat_Bord = np.array([8.6,7.6,7.6,7.8])
-G_dat_Breg = np.array([1.3,1.8,2.6,3.2])
-G_dat_Btot = np.array([17,16,15,13])
+G_dat_Bord     = np.array([8.6,7.6,7.6,7.8])
+G_dat_Breg     = np.array([1.3,1.8,2.6,3.2]) # from Beck+19, slightly different from original values in Fletcher+11
+err_G_dat_Breg = np.array([0.1,0.5,1,0.1]) # Fletcher+11 unmodified 
+G_dat_Btot     = np.array([17,16,15,13])
 
 #ordered field pitch angles
 #Beck+19
+po_endps_1 = np.array([1.2,2.4,3.6])*(8.5/7.6)
+po_endps_2 = np.array([7.2,8.4])*(8.5/7.6)
 range_po_beck19=np.array([1.7,3.0,7.8])*(8.5/7.6) #for po
 po_beck19 = np.array([20,27,19]) * np.pi/180 #pitch angle of ordered field
 err_po = np.array([2,2,5]) * np.pi/180 #error in po
@@ -58,11 +61,13 @@ po_borlaff21=np.array([70.76775227,36.02349172,24.64388681,22.46129204,23.114789
 
 #mean field pitch angles
 dat_pb = np.array([20,24,22,18]) * np.pi/180 #pitch angle of regular field
-err_pb = np.array([1,4,4,1,]) * np.pi/180
+err_pb = np.array([1,4,4,1]) * np.pi/180
 mrange_endps = np.array([2.4,3.6,4.8,6.0,7.2])*(8.5/7.6) #table 4, Beck+19
 range_pb = (mrange_endps[1:] + mrange_endps[:-1])/2 #average of each of the intervals given in above array
+mrange=range_pb
 
-#scale height data
+#scale height data C16
 kpc_dat_r = np.array([2.96,4.18,5.34,6.56])*(8.5/7.6)
-pc_dat_h = np.array([256.54,293.76,336.30,386.81])
+pc_dat_h = np.array([256.54,293.76,336.30,386.81]) # need to apply exponential correction if used
+
 
