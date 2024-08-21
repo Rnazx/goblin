@@ -42,15 +42,23 @@ Gamma  = Symbol('Gamma')
 A      = Symbol('A')
 K      = Symbol('K')
 
+# # Defining the general parameters
+# u   = Symbol('u')
+# tau = Symbol('tau')
+# l   = Symbol('l')
+# h   = Symbol('h')
+
+##############################################################################################################
+with open('turb_exp.pickle', 'rb') as f:
+    hg, h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
+
 # Defining the general parameters
+# defining here because we need symbols for l and u
 u   = Symbol('u')
 tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
 
-##############################################################################################################
-with open('turb_exp.pickle', 'rb') as f:
-    hg, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
 cs = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 
 Beq  = bet*u*(4*pi*rho)**Rational(1/2)

@@ -68,6 +68,7 @@ tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
 
+
 galaxy_name       = os.environ.get('galaxy_name')
 current_directory = str(os.getcwd())
 base_path         = os.environ.get('MY_PATH')
@@ -103,6 +104,9 @@ cs  = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 rho = sigma/(2*h)
 n   = rho/(mu*mh)
 nu  = (delta*sigmasfr)/(2*h*mstar)
+
+#defining a seperate expression for h only in terms of u
+h_vdisp = (u**2 + (A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
 
 nos = 3 #nos is the model number- 1, 2 or 3
 if nos == 1:
@@ -143,7 +147,7 @@ alphak1 = calpha*tau**2*u**2*omega/h
 alphak2 = calpha*tau*u**2/h
 alphak3 = kalpha*u
 
-turb_expr = hg, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3
+turb_expr = hg,h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3
 
 with open('turb_exp.pickle', 'wb') as f:
     pickle.dump(turb_expr, f)

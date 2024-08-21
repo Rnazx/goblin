@@ -14,7 +14,7 @@ from scipy.interpolate import griddata
 import sys
 from datetime import date
 import csv 
-from model_predictions import u_data_choose
+# from model_predictions import u_data_choose
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 import matplotlib.patches as patches
 
@@ -180,7 +180,7 @@ save_files_dir_err = os.path.join(base_path,'data\supplementary_data\{}'.format(
 os.chdir(save_files_dir_err)
 
 # define file names for error when datamaker or velocity dispersion being used for the turbulent velocity
-if u_data_choose == 'datamaker':
+if switch['u'] == 'datamaker':
     filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
 else:
@@ -199,7 +199,7 @@ with open(save_files_dir_err + filename, 'w', newline = '') as csvfile:
     csvwriter.writerows(rel_err_transpose)
 
 # define folder names for outputs when datamaker or velocity dispersion being used for the turbulent velocity
-if u_data_choose == 'datamaker':
+if switch['u'] == 'datamaker':
     save_files_dir = current_directory+r'\{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
 else:

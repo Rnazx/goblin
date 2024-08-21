@@ -1,3 +1,5 @@
 incl_moldat= No
 force_kennicut_scmidt= No, sigmadata
 tau= taue 
+u= data
+h= root_find

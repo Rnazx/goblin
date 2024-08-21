@@ -16,9 +16,9 @@ galaxy_name = os.environ.get('galaxy_name')
 
 # variables introduced to customise the scale height and velocity dispersion values used in the model
 # choose to use datamaker fn or actual velocity dispersion data for u_f
-u_data_choose = 'datamaker' # 'data' or 'datamaker' 
-# scale height customisation 
-h_data_choose = 'root_find' # 'root_find' or 'exponential'
+# u_data_choose = 'data' # 'data' or 'datamaker' 
+# # scale height customisation 
+# h_data_choose = 'root_find' # 'root_find' or 'exponential'
 
 def h_exp(kpc_r):
     # required constants
@@ -65,45 +65,45 @@ with open('zip_data.in', 'rb') as f:
 os.chdir(os.path.join(base_path,'expressions'))
 
 with open('turb_exp.pickle', 'rb') as f:
-    hg, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
+    hg,h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
 
 with open('mag_exp.pickle', 'rb') as f:
     biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc = pickle.load(f)
 
 os.chdir(current_directory)
 cs_f = exp_analytical_data(cs, data_pass).astype(np.float64)
+vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
+vdisp = vdisp_df["v disp"].values # in cgs units
+
 
 h_init_trys = [1e+15, 1e+25, 1e+35]
 for i,hi in enumerate(h_init_trys):
     try:
-        if h_data_choose == 'root_find':
-            if __name__ == '__main__': 
-                print('Try {} for initial guess of h as {:e} cm'.format(i,np.round(hi)))
-            
-            h_f = root_finder(exp_analytical_data(hg, data_pass), hi)
-            
-            if __name__ == '__main__': 
-                print('Root found succesfully')
+        if switch['u'] != 'datamaker':
+            h_f = datamaker(h_vdisp, data_pass, np.ones(len(vdisp)),None, None, vdisp)  
         else:
-            h_f = h_exp(kpc_r)
+            if switch['h'] == 'root_find': #'root_find' or 'exponential'
+                if __name__ == '__main__': 
+                    print('Try {} for initial guess of h as {:e} cm'.format(i,np.round(hi)))
+                
+                h_f = root_finder(exp_analytical_data(hg, data_pass), hi)
+                
+                if __name__ == '__main__': 
+                    print('Root found succesfully')
+            else:
+                h_f = h_exp(kpc_r)
 
         l_f = datamaker(l, data_pass, h_f)
 
         # choose to use datamaker fn or actual velocity dispersion data for u_f
-        if u_data_choose == 'datamaker':
+        if switch['u'] == 'datamaker':
             u_f = datamaker(u, data_pass, h_f)
         else: # call the velocity dispersion data from supplemetary data folder in the data folder
-            # save this folder as a variable
-            curr_dir = os.getcwd()
-            # go to the data folder
-            os.chdir(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}'))
-            vdisp_df = pd.read_csv(f'{galaxy_name}_veldisp_ip.csv')
-            u_f = vdisp_df["v disp"].values # in cgs units
-            # go back to the current directory
-            os.chdir(curr_dir)
+            u_f = vdisp
 
-        taue_f = datamaker(taue, data_pass, h_f)
-        taur_f = datamaker(taur, data_pass, h_f)
+
+        taue_f = datamaker(taue, data_pass, h_f, None, None, u_f, l_f)
+        taur_f = datamaker(taur, data_pass, h_f, None, None, u_f, l_f)
         if switch['tau']=='taue':
             tau_f = taue_f 
         elif switch['tau']=='taur':
@@ -111,12 +111,12 @@ for i,hi in enumerate(h_init_trys):
         else:
             tau_f = np.minimum(taue_f, taur_f)  
 
-        omega  = Symbol('\Omega')
+        omega = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
 
-        omt = datamaker(omega, data_pass, h_f, tau_f)*tau_f
-        kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f)*(h_f/(tau_f*u_f))
+        omt = datamaker(omega, data_pass, h_f, tau_f, None, u_f, l_f)*tau_f
+        kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f, None, u_f, l_f)*(h_f/(tau_f*u_f))
 
         alphak_f = []
 
@@ -128,21 +128,21 @@ for i,hi in enumerate(h_init_trys):
             else:
                 alpha_k = alphak3
             alphak_f.append(datamaker(alpha_k, [data_pass[i]], np.array(
-                [h_f[i]]), np.array([tau_f[i]]))[0])
+                [h_f[i]]), np.array([tau_f[i]]), None, u_f, l_f)[0])
 
         alphak_f = np.array(alphak_f)
 
-        biso_f = datamaker(biso, data_pass, h_f, tau_f)
-        bani_f = datamaker(bani, data_pass, h_f, tau_f)
 
-        dkdc_f = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f)
+        biso_f = datamaker(biso, data_pass, h_f, tau_f, None, u_f, l_f)
+        bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f)
+
+        dkdc_f = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f)
         alpham_f = alphak_f*((1/dkdc_f)-1)
 
-        Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f)
+        Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f)
 
-        tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f)
-        tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f)
-
+        tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f)
+        tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f)
         mag_obs = kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
 
         os.chdir(os.path.join(base_path,'outputs'))
