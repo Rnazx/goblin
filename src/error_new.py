@@ -315,21 +315,26 @@ def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, 
         else: # molecular gas is included
                 if galaxy_name == 'm31':
                         molfrac         = molfrac_or_sigmaH2
-                        molfrac_err_tot = [np.sqrt(((molfrac[i]*np.sin(nINC_rad)*err_nINC_rad)/(np.cos(oINC_rad[-1])))**2 + ((molfrac[i]*np.cos(nINC_rad)*err_oINC_rad[-1]*np.sin(oINC_rad[-1]))/(np.cos(oINC_rad[-1]))**2)**2 + (molfrac_err[i]*np.cos(nINC_rad))/np.cos(oINC_rad[-1])**2) for i in range(len(kpc_r))]
+                        # error in molfrac due to uncertainty in inclination, distance and molfrac data
+                        molfrac_err_tot = [np.sqrt(((molfrac[i]*np.sin(nINC_rad)*err_nINC_rad)/(np.cos(oINC_rad[-1])))**2 + 
+                                                   ((molfrac[i]*np.cos(nINC_rad)*err_oINC_rad[-1]*np.sin(oINC_rad[-1]))/(np.cos(oINC_rad[-1]))**2)**2 + 
+                                                   (molfrac_err[i]*np.cos(nINC_rad))/np.cos(oINC_rad[-1])**2) for i in range(len(kpc_r))]
                         sigmaHI_err     = sigmaHI_not_corrected*percent_sigmaHI_err
                         
                         term1       = [(sigmaHI_err.iloc[i]*molfrac.iloc[i])/(1-molfrac.iloc[i]) for i in range(len(kpc_r))]                        
                         term2       = [(sigmaHI_not_corrected.iloc[i]*molfrac_err_tot[i])/((1-molfrac.iloc[i])**2) for i in range(len(kpc_r))]                        
-                        err_sigmaH2 = [np.sqrt(term1[i]**2+ term2[i]**2) for i in range(len(kpc_r))] 
+                        err_sigmaH2 = [np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))] 
                 else:
                         if galaxy_name == 'm33':
-                            u = 3 # extra column due to Koch data
-                        else:
-                            u = 2
+                                u = 3 # extra column due to Koch data
+                                sigmaH2_not_corrected = molfrac_or_sigmaH2
+                                sigmaH2_err           = err_interpolated_df_cgs['error sigma_H2']
 
-                        sigmaH2_not_corrected = molfrac_or_sigmaH2
-                        percent_sigmaH2_err   = 0.06
-                        sigmaH2_err           = sigmaH2_not_corrected*percent_sigmaH2_err
+                        else:
+                                u = 2
+                                sigmaH2_not_corrected = molfrac_or_sigmaH2
+                                percent_sigmaH2_err   = 0.06
+                                sigmaH2_err           = sigmaH2_not_corrected*percent_sigmaH2_err
 
                         term1 = [(sigmaH2_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
                         term2 = [(sigmaH2_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
