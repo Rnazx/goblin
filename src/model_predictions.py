@@ -71,9 +71,9 @@ with open('mag_exp.pickle', 'rb') as f:
     biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc = pickle.load(f)
 
 os.chdir(current_directory)
-cs_f = exp_analytical_data(cs, data_pass).astype(np.float64)
+cs_f     = exp_analytical_data(cs, data_pass).astype(np.float64)
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
-vdisp = vdisp_df["v disp"].values # in cgs units
+vdisp    = vdisp_df["v disp"].values # in cgs units
 
 
 h_init_trys = [1e+15, 1e+25, 1e+35]
@@ -111,7 +111,7 @@ for i,hi in enumerate(h_init_trys):
         else:
             tau_f = np.minimum(taue_f, taur_f)  
 
-        omega = Symbol('\Omega')
+        omega  = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
 

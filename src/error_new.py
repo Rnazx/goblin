@@ -111,47 +111,6 @@ raw_data_astro_units_kpc = incl_distance_correction(raw_data_astro_units, distan
 temp_fit = np.genfromtxt(f'temp_{galaxy_name}.csv', skip_header = 1, delimiter = ',')
 #################################################################################################################
 
-# # need to change in data_helpers.py
-# def vcirc_to_qomega_new(df,remove_vcirc=False):
-    
-#     df         = df.copy()
-#     vcirc_data = keep_substring_columns(df, 'vcirc')
-
-#     if vcirc_data[0].empty:
-#         return df
-#     else:
-#         r              = df[get_adjacent_column(df, vcirc_data[1][0], False)].to_numpy().flatten()
-#         Om             = vcirc_data[0].to_numpy().flatten()/r
-#         q              = -1 * r/Om* np.gradient(Om)/np.gradient(r)
-#         index_of_vcirc = df.columns.get_loc(vcirc_data[1][0])
-
-#         df.insert(index_of_vcirc, '\Omega', Om)
-#         df.insert(index_of_vcirc, 'r omega', r)
-#         df.insert(index_of_vcirc, 'q', q)
-
-#         if remove_vcirc:
-#                 # get df without vcirc
-#                 df.drop(columns = vcirc_data[1], inplace=True)
-#         return df
-    
-# def molfrac_to_H2_new(df,remove_molfrac=False):
-    
-#     df           = df.copy()
-#     molfrac_data = keep_substring_columns(df, 'molfrac')
-
-#     if molfrac_data[0].empty:
-#         return df
-#     else:
-#         HI_data     = keep_substring_columns(df, 'HI')
-#         sigma_H2    = HI_data[0].multiply((molfrac_data[0]/(1-molfrac_data[0])).values, axis = 0)
-#         index_of_HI = df.columns.get_loc(HI_data[1][0])
-#         df.insert(index_of_HI+1, 'sigma_H2', sigma_H2)
-
-#         if remove_molfrac:
-#             df.drop(columns = molfrac_data[1], inplace = True)
-#         return df
-#################################################################################################################
-
 raw_data_astro_units_kpc = vcirc_to_qomega(raw_data_astro_units_kpc, False) #raw_data contain v_circ also
 raw_data_radii_df_kpc    = keep_substring_columns(raw_data_astro_units_kpc, 'r ')[0]
 
@@ -175,11 +134,6 @@ else:
         # proceed to next step 
         coarsest_radii_mask = raw_data_radii_df_kpc.isnull().sum().idxmax()
         kpc_r               = raw_data_radii_df_kpc[coarsest_radii_mask].to_numpy()
-
-
-# print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data_drop_sigmaH2,coarsest_radii_mask)))
-# kpc_r = raw_data_radii_df_kpc[coarsest_radii_mask].to_numpy()
-
 
 interpolated_df_astro_units_kpc = df_interpolation(raw_data_astro_units_kpc,raw_data_radii_df_kpc, kpc_r)
 
@@ -266,6 +220,12 @@ else:
         conv_factors = np.array([1,cm_km])
 
 err_interpolated_df_cgs = err_interpolated_df_astro_units_kpc*conv_factors
+
+# in data folder, save the interpolated data in cgs units
+os.chdir(os.path.join(base_path,'data'))
+err_interpolated_df_cgs.to_csv(f'error_interpolated_{galaxy_name}.csv', index = False)
+# return to base path
+os.chdir(base_path)
 #########################################################################################
 
 # unit conversions for all functions

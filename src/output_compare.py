@@ -59,20 +59,20 @@ new_dir_model_data = os.path.join(current_dir, 'data')
 combined_obs_data = os.path.join(current_dir, 'data','model_data')
 
 # make a folder to save radial variation plots in new_dir_supp_data
-os.makedirs('plots', exist_ok=True) # if the folder already exists, it will not create a new one
-os.makedirs('plots_r25', exist_ok=True) # if the folder already exists, it will not create a new one
+os.makedirs('plots',              exist_ok=True) # if the folder already exists, it will not create a new one
+os.makedirs('plots_r25',          exist_ok=True) # if the folder already exists, it will not create a new one
 # make a folder to save o/p vs i/p plots in new_dir_supp_data
-os.makedirs('output_vs_obs', exist_ok=True)
+os.makedirs('output_vs_obs',      exist_ok=True)
 # make a folder to save log o/p vs log i/p plots in new_dir_supp_data
-os.makedirs('output_vs_obs_log', exist_ok=True)
+os.makedirs('output_vs_obs_log',  exist_ok=True)
 # make a folder to save o/p vs o/p plots in new_dir_supp_data
-os.makedirs('output_vs_output', exist_ok=True)
+os.makedirs('output_vs_output',   exist_ok=True)
 # make a folder to save i/p vs i/p plots in new_dir_supp_data
-os.makedirs('obs_vs_obs', exist_ok=True)
+os.makedirs('obs_vs_obs',         exist_ok=True)
 # make a folder to store miscellaneous plots
-os.makedirs('miscellaneous', exist_ok=True)
+os.makedirs('miscellaneous',      exist_ok=True)
 # make a folder to save scale length plots and calculations
-os.makedirs('scale_length_B', exist_ok=True)
+os.makedirs('scale_length_B',     exist_ok=True)
 # make a folder to save observable vs r data (interpolated)
 os.makedirs('obs_vs_radius_supp', exist_ok=True)
 
@@ -195,24 +195,28 @@ galaxies = ['m31', 'm33', 'm51', 'ngc6946']
 # color map for each galaxy
 color_map = {'m31': 'blue', 'm33': 'green', 'm51': 'red', 'ngc6946': 'purple'}
 
-params_dict = {'m31': {'moldat': 'No', 'z': 15.0, 'psi': 2.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
-               'm33': {'moldat': 'No', 'z': '10.0', 'psi': '1.0', 'ca': '4.0', 'beta': '8.0', 'A': '1.414'}, 
-               'm51': {'moldat': 'No', 'z': '15.0', 'psi': '1.0', 'ca': '4.0', 'beta': '8.0', 'A': '1.414'}, 
-               'ngc6946': {'moldat': 'No', 'z': '30.0', 'psi': '1.0', 'ca': '4.0', 'beta': '8.0', 'A': '1.414'}}
+params_dict = {'m31':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 2.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
+               'm33':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
+               'm51':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
+               'ngc6946': {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 30.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}}
+
+# get today's date
+today = str(date.today())
 
 for galaxy in galaxies:
     # go to specific folder based on params of each galaxy and today's date
     # folder name format: 2024-06-30,moldat_No,taue,z_15.0,psi_2.0,ca_4.0,beta_8.0,A_1.414
 
-    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2024-08-06,moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], 
+    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(today,params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+                                                                        params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
                                                                         params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
                                                                         params_dict[galaxy]['A']))
     
     # loading the model outputs to df
-    data     = open_csv_file('Copy')
-    data_err = open_csv_file('error_values_model_outputs')
-    data_mag = open_csv_file('magnetic_data')
+    data     = open_csv_file('model_outputs')
+    data_err = open_csv_file('error_output')
+    data_mag = open_csv_file('magnetic_output')
 
     # Add the data to the dictionary
     galaxy_data[galaxy]     = data
@@ -263,7 +267,7 @@ symbols_for_axis = [r'$r$', r'$h$', r'$l$', r'$u$', r'$c_\mathrm{s}$', r'$w$', r
                     r'$p_\mathrm{ord}$', r'$p_\mathrm{reg}$',  r'$\alpha_\mathrm{k}$', r'$\tau_\mathrm{e}$', r'$\tau_\mathrm{r}$', r'$\mathrm{D}/\mathrm{D}_{\mathrm{c}}$', r'$\mathcal{M} = u/c_\mathrm{s}$', r'$\gamma$', r'$\frac{1}{\gamma}$']
 
 # units for observables
-units_for_obs = ['(kpc)', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', ' ', '(1/s)', r'$(\mathrm{g}/\mathrm{s} \mathrm{ cm}^2)$', '(K)']
+units_for_obs        = ['(kpc)', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', ' ', '(1/s)', r'$(\mathrm{g}/\mathrm{s} \mathrm{ cm}^2)$', '(K)']
 quants_for_title_obs = ['Radius', r'$\Sigma_{\mathrm{tot}}$', r'$\Sigma_{\mathrm{HI}}$', r'$\Sigma_{\mathrm{H}_\mathrm{2}}$', 'q', r'$Omega$', r'$\Sigma_{\mathrm{SFR}}$', 'Temperature']
 symbols_for_axis_obs = [r'$r$', r'$\Sigma_{\mathrm{tot}}$', r'$\Sigma_{\mathrm{HI}}$', r'$\Sigma_{\mathrm{H}_\mathrm{2}}$', 'q', r'$Omega$', r'$\Sigma_{\mathrm{SFR}}$', 'T']
 

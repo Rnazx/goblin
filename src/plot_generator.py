@@ -180,12 +180,15 @@ save_files_dir_err = os.path.join(base_path,'data\supplementary_data\{}'.format(
 os.chdir(save_files_dir_err)
 
 # define file names for error when datamaker or velocity dispersion being used for the turbulent velocity
-if switch['u'] == 'datamaker':
-    filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-                                    params[r'C_\alpha'],params[r'\beta'],params['A'])
-else:
-    filename = r'\u_data_{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-                                    params[r'C_\alpha'],params[r'\beta'],params['A'])
+# if switch['u'] == 'datamaker':
+#     filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+#                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
+# else:
+#     filename = r'\u_data_{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+#                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
+
+filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+                params[r'C_\alpha'],params[r'\beta'],params['A'])
 
 rel_err_transpose = list(zip(*err_quant_list))
 column_names = ['h_err', 'l_err', 'u_err', 'cs_err', 'alphak_err', 'tau_err', \
@@ -198,14 +201,18 @@ with open(save_files_dir_err + filename, 'w', newline = '') as csvfile:
     csvwriter.writerow(column_names)
     csvwriter.writerows(rel_err_transpose)
 
-# define folder names for outputs when datamaker or velocity dispersion being used for the turbulent velocity
-if switch['u'] == 'datamaker':
-    save_files_dir = current_directory+r'\{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+# # define folder names for outputs when datamaker or velocity dispersion being used for the turbulent velocity
+# if switch['u'] == 'datamaker':
+#     save_files_dir = current_directory+r'\{},moldat_{},{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],switch['tau'],params[r'\zeta'],params[r'\psi'],
+#                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
+# else:
+#     save_files_dir = current_directory+r'\u_data_{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+#                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
+
+# define folder names for outputs 
+save_files_dir = current_directory+r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],switch['tau'],switch['force_kennicut_scmidt'][0],switch['u'],switch['h'],params[r'\zeta'],params[r'\psi'],
                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
-else:
-    save_files_dir = current_directory+r'\u_data_{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-                                params[r'C_\alpha'],params[r'\beta'],params['A'])
-    
+
 # new directories wont be made when the directory name is imported from this file
 if __name__ == '__main__': 
     try:
@@ -975,7 +982,7 @@ plt.savefig(save_files_dir+r'\9 e folding')
 ##############################################################################################33
 
 # saving all relative errors to a csv file
-filename = r'\error_values_model_outputs.csv'
+filename = r'\error_output.csv'
 
 Btot_err             = G_scal_Bbartot_err*1e+6
 Breg_err             = G_scal_Bbarreg_err*1e+6
@@ -997,7 +1004,7 @@ with open(save_files_dir+filename, 'w', newline='') as csvfile:
 
 ##################################################################################################################
 # saving percent errors to a csv file
-filename = r'\percent_error_model_outputs.csv'
+filename = r'\percent_error_output.csv'
 
 # quants=[h,l,u,cs,sig,Btot,Breg,Bord,pB_deg,po_deg,b,dkdc_f]
 percent_err           = [kpc_r,percent_err_h,percent_err_l,percent_err_u,percent_err_cs,percent_err_sig,percent_err_Btot,percent_err_Breg,percent_err_Bord,percent_err_po,percent_err_pB,percent_err_alphak,percent_err_taue,percent_err_taur,percent_error_dkdc,percent_err_Mach,percent_err_gamma]
@@ -1028,7 +1035,7 @@ with open(save_files_dir+filename, 'w', newline='') as csvfile:
 
 ##################################################################################################################
 
-filename = r'\magnetic_data.csv'
+filename = r'\magnetic_output.csv'
 # find tan inverse pb_f
 pb_f             = np.arctan(pb)
 # convert to degrees
