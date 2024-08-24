@@ -187,7 +187,7 @@ os.chdir(save_files_dir_err)
 #     filename = r'\u_data_{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
 #                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
 
-filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+filename = r'{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
                 params[r'C_\alpha'],params[r'\beta'],params['A'])
 
 rel_err_transpose = list(zip(*err_quant_list))
@@ -196,7 +196,7 @@ column_names = ['h_err', 'l_err', 'u_err', 'cs_err', 'alphak_err', 'tau_err', \
                 'tanpB_err', 'tanpb_err', 'dkdc_err']
 
 # Writing to the file
-with open(save_files_dir_err + filename, 'w', newline = '') as csvfile:
+with open(os.path.join(save_files_dir_err,filename), 'w', newline = '') as csvfile:
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow(column_names)
     csvwriter.writerows(rel_err_transpose)
@@ -208,13 +208,13 @@ with open(save_files_dir_err + filename, 'w', newline = '') as csvfile:
 # else:
 #     save_files_dir = current_directory+r'\u_data_{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
 #                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
-switches_info = r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),
+switches_info = r'{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),
                                                                                           switch['incl_moldat'],switch['tau'],
                                                                                           switch['force_kennicut_scmidt'][0],switch['u'],
                                                                                           switch['h'],params[r'\zeta'],params[r'\psi'],
                                                                                             params[r'C_\alpha'],params[r'\beta'],params['A'])
 # define folder names for outputs 
-save_files_dir = os.path.join(base_path,'results',galaxy_name)+switches_info
+save_files_dir = os.path.join(base_path,'results',galaxy_name,switches_info)
 
 # new directories wont be made when the directory name is imported from this file
 if __name__ == '__main__': 

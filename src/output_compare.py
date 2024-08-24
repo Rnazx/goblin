@@ -39,25 +39,27 @@ cm_kpc = 3.086e+21  # number of centimeters in one parsec
 cm_pc = cm_kpc/1e+3
 s_Myr = 1e+6*(365*24*60*60)  # megayears to seconds
 
+base_path   = os.environ.get('MY_PATH')
+galaxy_name = os.environ.get('galaxy_name')
 #########################################################################################
 #error in distance and inclination
 
-current_dir = os.getcwd()
-print('Current directory:', current_dir)
+# current_dir = os.getcwd()
+# print('Current directory:', current_dir)
 
-parent_dir = os.path.dirname(current_dir)
-os.chdir(parent_dir)
+# parent_dir = os.path.dirname(current_dir)
+# os.chdir(parent_dir)
 
 # going to supplementary_data folder where files are stored
-new_dir_supp_data = os.path.join(current_dir, 'data', 'supplementary_data')
-os.chdir(new_dir_supp_data)
+new_dir_supp_data = os.path.join(base_path, 'results')
 
 # going to model_data folder where interpolated data is stored
-new_dir_model_data = os.path.join(current_dir, 'data')
+new_dir_model_data = os.path.join(base_path, 'data')
 
 # going to model_data folder where combined data is stored
-combined_obs_data = os.path.join(current_dir, 'data','model_data')
+combined_obs_data = os.path.join(base_path, 'data','model_data')
 
+os.chdir(os.path.join(new_dir_supp_data,'comparison_plots'))
 # make a folder to save radial variation plots in new_dir_supp_data
 os.makedirs('plots',              exist_ok=True) # if the folder already exists, it will not create a new one
 os.makedirs('plots_r25',          exist_ok=True) # if the folder already exists, it will not create a new one
@@ -75,6 +77,8 @@ os.makedirs('miscellaneous',      exist_ok=True)
 os.makedirs('scale_length_B',     exist_ok=True)
 # make a folder to save observable vs r data (interpolated)
 os.makedirs('obs_vs_radius_supp', exist_ok=True)
+
+os.chdir(new_dir_supp_data)
 
 def open_csv_file(string):
     for file in os.listdir():
@@ -798,10 +802,10 @@ for i in range(1,len(quantities)):
             plt.text(x=0, y=1.1, s=title, fontsize=title_textsize, fontweight='normal', ha='left', va='top', transform=ax.transAxes, 
                     bbox=dict(facecolor='none', edgecolor='black', boxstyle='square,pad=0.1'))
 
-        os.chdir('plots')
+        os.chdir(os.path.join(base_path,'results','comparison_plots'))
         plt.savefig('{}'.format(quantities[i]))
 
-        os.chdir('..')
+        os.chdir(base_path)
     plt.close()
 
 #     # after normalising with r_25
