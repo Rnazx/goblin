@@ -176,7 +176,7 @@ def axis_pars(ax):
 
 # saving the errors as csv file
 # save_files_dir_err = r'D:\Documents\Gayathri_college\MSc project\codes\GOBLIN\goblin\data\supplementary_data\{}'.format(galaxy_name)
-save_files_dir_err = os.path.join(base_path,'data\supplementary_data\{}'.format(galaxy_name))
+save_files_dir_err = os.path.join(base_path,'data','supplementary_data',galaxy_name)
 os.chdir(save_files_dir_err)
 
 # define file names for error when datamaker or velocity dispersion being used for the turbulent velocity
@@ -208,20 +208,23 @@ with open(save_files_dir_err + filename, 'w', newline = '') as csvfile:
 # else:
 #     save_files_dir = current_directory+r'\u_data_{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
 #                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
-
+switches_info = r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),
+                                                                                          switch['incl_moldat'],switch['tau'],
+                                                                                          switch['force_kennicut_scmidt'][0],switch['u'],
+                                                                                          switch['h'],params[r'\zeta'],params[r'\psi'],
+                                                                                            params[r'C_\alpha'],params[r'\beta'],params['A'])
 # define folder names for outputs 
-save_files_dir = current_directory+r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],switch['tau'],switch['force_kennicut_scmidt'][0],switch['u'],switch['h'],params[r'\zeta'],params[r'\psi'],
-                                params[r'C_\alpha'],params[r'\beta'],params['A'])
+save_files_dir = os.path.join(base_path,'results',galaxy_name)+switches_info
 
 # new directories wont be made when the directory name is imported from this file
 if __name__ == '__main__': 
     try:
         os.makedirs(save_files_dir)
-        os.chdir(save_files_dir)
+        #os.chdir(save_files_dir)
     except FileExistsError:
         # Handle the case where the directory already exists
         print(f"The directory '{save_files_dir}' already exists, going there.")
-        os.chdir(save_files_dir)
+        #os.chdir(save_files_dir)
         #anything in this folder before will be re-written
     except OSError as e:
         # Handle other OSError exceptions if they occur
