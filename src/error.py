@@ -1,35 +1,40 @@
+# This file calculates the errors in the observables using the scaling relations. 
+# The errors are then saved in a pickle file and a csv file.
+
+print('#####  Error calculation ######')
+
 import numpy as np
 import pickle
 import os
 import pandas as pd
 from helper_functions import parameter_read
 from data_helpers import *
+from datetime import date
+import csv #for saving err data as csv file
+import icecream as ic
 
-
-#converting from 2nd unit to 1st
-pc_kpc = 1e3  # number of pc in one kpc
-cm_km = 1e5  # number of cm in one km
-s_day = 24*3600  # number of seconds in one day
-s_min = 60  # number of seconds in one hour
-s_hr = 3600  # number of seconds in one hour
-cm_Rsun = 6.957e10  # solar radius in cm
-g_Msun = 1.989e33  # solar mass in g
-cgs_G = 6.674e-8
-cms_c = 2.998e10
-g_mH = 1.6736e-24
-g_me = 9.10938e-28
-cgs_h = 6.626e-27
-deg_rad = 180e0/np.pi
+# converting from 2nd unit to 1st
+pc_kpc     = 1e3      # number of pc in one kpc
+cm_km      = 1e5      # number of cm in one km
+s_day      = 24*3600  # number of seconds in one day
+s_min      = 60       # number of seconds in one hour
+s_hr       = 3600     # number of seconds in one hour
+cm_Rsun    = 6.957e10 # solar radius in cm
+g_Msun     = 1.989e33 # solar mass in g
+cgs_G      = 6.674e-8
+cms_c      = 2.998e10
+g_mH       = 1.6736e-24
+g_me       = 9.10938e-28
+cgs_h      = 6.626e-27
+deg_rad    = 180e0/np.pi
 arcmin_deg = 60e0
 arcsec_deg = 3600e0
-cm_kpc = 3.086e+21  # number of centimeters in one parsec
-cm_pc = cm_kpc/1e+3
-s_Myr = 1e+6*(365*24*60*60)  # megayears to seconds
+cm_kpc     = 3.086e+21            # number of centimeters in one parsec
+cm_pc      = cm_kpc/1e+3
+s_Myr      = 1e+6*(365*24*60*60)  # megayears to seconds
 
 #########################################################################################
-#error in distance and inclination
-
-base_path = os.environ.get('MY_PATH')
+base_path   = os.environ.get('MY_PATH')
 galaxy_name = os.environ.get('galaxy_name')
 
 #get parameter values
@@ -45,578 +50,468 @@ with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'
 
 os.chdir(os.path.join(base_path,'inputs'))
 
-#getting available data and error
+# getting available data and error
 os.chdir(os.path.join(base_path, 'data','model_data', f'{galaxy_name}_data'))
-raw_data = pd.read_csv(f'combined_data_{galaxy_name}.csv', skiprows=1) #needed to obtain vcirc values which isnt present in interpolated_data.csv
-err_data= pd.read_csv(f'error_combined_{galaxy_name}.csv')
-corrections = pd.read_csv(f'correction_data_{galaxy_name}.csv', skiprows=1, index_col=0)
 
-# oDIST,oINC,nDIST,nINC
-#distance correction
-nDIST= corrections.iloc[-1,0]
-err_nDIST=corrections.iloc[-1,2]
-oDIST = corrections.iloc[:-1,0].values
-err_oDIST=corrections.iloc[:-1,2].values
+# here the units of observables are as used in source papers
+# radius may be in kpc or arcsec/arcmin
+raw_data_astro_units = pd.read_csv(f'combined_data_{galaxy_name}.csv', skiprows = 1) # needed to obtain vcirc values which isnt present in interpolated_data.csv
+err_data_astro_units = pd.read_csv(f'error_combined_{galaxy_name}.csv')
+corrections_kpc_deg  = pd.read_csv(f'correction_data_{galaxy_name}.csv', skiprows = 1, index_col = 0)
 
-#inclination correction
-nINC= corrections.iloc[-1,1] #deg
-err_nINC= corrections.iloc[-1,3] #deg
-oINC= corrections.iloc[:-1,1].values #used new_i as no inclination correction is needed for Claude data
-err_oINC=corrections.iloc[:-1,3].values
-
-#################################################################################################################
-#raw_data from combined_data.csv is converted to correct units, but no D/i correction done here
-raw_data = incl_distance_correction(raw_data, distance_new=oDIST, distance_old=oDIST,\
-                        i_new=np.radians(oINC), i_old=np.radians(oINC))
-raw_data_corrected = incl_distance_correction(raw_data, distance_new=nDIST, distance_old=oDIST,\
-                        i_new=np.radians(nINC), i_old=np.radians(oINC))
-
-print('raw data')
-print(raw_data)
-print(raw_data_corrected)
-# os.chdir(os.path.join(base_path, 'data','model_data', f'{galaxy_name}_data'))
-
-#unwanted cols are removed from raw_data
-# index_of_removed_data=[]
-# try:
-#     data_rem = pd.read_csv(f'removed_data_{galaxy_name}.csv', dtype=str)
-# except:
-#     data_rem = []
-# for d in data_rem:
-#     #change this
-#     names=[i for i in raw_data.columns if d in i]
-#     index_of_removed_data=[raw_data.columns.get_loc(i) for i in names]
-#     remove_data(raw_data, d)
-
+# data to be removed
+corrections_kpc_deg = corrections_kpc_deg.T # taking transpose of corrections df
 try:
     data_rem = pd.read_csv(f'removed_data_{galaxy_name}.csv', dtype=str)
 except:
     data_rem = []
 for d in data_rem:
-    remove_data(raw_data, d)
-    remove_data(raw_data_corrected, d)
-
-temp_fit = np.genfromtxt(f'temp_{galaxy_name}.csv', skip_header = 1,delimiter=',')
-
+    remove_data(corrections_kpc_deg, d, False)
+    remove_data(raw_data_astro_units, d)
+corrections_kpc_deg = corrections_kpc_deg.T # reverting the transpose
 #################################################################################################################
+# error in distance and inclination
 
-#need to change in data_helpers.py
-def vcirc_to_qomega_new(df,remove_vcirc=False):
-    df = df.copy()
-    vcirc_data = keep_substring_columns(df, 'vcirc')
-    if vcirc_data[0].empty:
-        return df
-    else:
-        r = df[get_adjacent_column(df, vcirc_data[1][0], False)].to_numpy().flatten()
-        Om = vcirc_data[0].to_numpy().flatten()/r
-        q = -1 * r/Om* np.gradient(Om)/np.gradient(r)
-        index_of_vcirc = df.columns.get_loc(vcirc_data[1][0])
-        df.insert(index_of_vcirc, '\Omega', Om)
-        df.insert(index_of_vcirc, 'r omega', r)
-        df.insert(index_of_vcirc, 'q', q)
-        if remove_vcirc:
-                #get df without vcirc
-                df.drop(columns=vcirc_data[1], inplace=True)
-        return df
-    
-def molfrac_to_H2_new(df,remove_molfrac=False):
-    df = df.copy()
-    molfrac_data = keep_substring_columns(df, 'molfrac')
-    if molfrac_data[0].empty:
-        return df
-    else:
-        HI_data = keep_substring_columns(df, 'HI')
-        sigma_H2 = HI_data[0].multiply((molfrac_data[0]/(1-molfrac_data[0])).values, axis = 0)
-        index_of_HI = df.columns.get_loc(HI_data[1][0])
-        df.insert(index_of_HI+1, 'sigma_H2', sigma_H2)
-        if remove_molfrac:
-            df.drop(columns=molfrac_data[1], inplace=True)
-        return df
-#################################################################################################################
+# order of quantities in corrections file: sigma_tot, sigma_HI, sigma_H2, vcirc, sigma_sfr
+# distance correction
+nDIST_kpc       = corrections_kpc_deg.iloc[-1,0]
+err_nDIST_kpc   = corrections_kpc_deg.iloc[-1,2]
+oDIST_kpc       = corrections_kpc_deg.iloc[:-1,0].values
+err_oDIST_kpc   = corrections_kpc_deg.iloc[:-1,2].values
 
-#################################################################################################################
+# inclination correction
+nINC_deg        = corrections_kpc_deg.iloc[-1,1] # deg
+err_nINC_deg    = corrections_kpc_deg.iloc[-1,3] # deg
+oINC_deg        = corrections_kpc_deg.iloc[:-1,1].values # used new_i as no inclination correction is needed for Claude data
+err_oINC_deg    = corrections_kpc_deg.iloc[:-1,3].values
 
-raw_data= vcirc_to_qomega_new(raw_data) #raw_data contain v_circ also
-raw_data_radii_df = keep_substring_columns(raw_data, 'r ')[0]
-
-raw_data_corrected= vcirc_to_qomega_new(raw_data_corrected) #raw_data contain v_circ also
-raw_data_radii_df_corrected = keep_substring_columns(raw_data_corrected, 'r ')[0]
-# print(raw_data.iloc[:,-1][3]*g_Msun/((s_Myr*1e3)*(cm_pc**2)))
-
-
-err_data = incl_distance_correction(err_data, distance_new=nDIST, distance_old=oDIST,\
-            i_new=np.radians(nINC), i_old=np.radians(oINC)) #correcting errors for D and i
-err_radii_df = keep_substring_columns(err_data, 'R')[0]
-
-coarsest_radii_mask = raw_data_radii_df.isnull().sum().idxmax()
-
-print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data,coarsest_radii_mask)))
-kpc_r = raw_data_radii_df[coarsest_radii_mask].to_numpy()
-# kpc_r_not_interpolated=kpc_r
-
-#print(raw_data)
-interpolated_df = df_interpolation(raw_data,raw_data_radii_df, kpc_r)
-# interpolated_df_corrected = df_interpolation(raw_data_corrected,raw_data_radii_df, kpc_r)
-interpolated_df_corrected = df_interpolation(raw_data_corrected,raw_data_radii_df_corrected, kpc_r)
-print('                                                     ')
-print('right after interpolation')
-print(interpolated_df)
-print(interpolated_df_corrected)
-# print(err_data)
-
-##################################################################
-max_rows_A = max(len(err_data[col]) for col in err_data.columns)
-max_rows_B = max(len(interpolated_df[col]) for col in interpolated_df.columns)
-# print(max_rows_B)
-# print(len(interpolated_df.columns))
-# print(len(err_data.columns))
-
-err_data_long = pd.DataFrame(0, index=range(max(max_rows_A,max_rows_B)), columns=err_data.columns)
-if max_rows_A>max_rows_B: #err_data has greater length. nan added to interpolated_df
-       for i in range(len(interpolated_df.columns)):
-                interpolated_df.iloc[abs(max_rows_A-max_rows_B):, i] = np.nan
+# galaxy-wise inc and D for correcting the errors
+# should be customised when new data/galaxies are added for error
+if galaxy_name == 'm31':
+       inc_for_err  = np.radians([77, 77.5])
+       dist_for_err = np.array([0.78, 0.78])
+elif galaxy_name == 'm33':
+       inc_for_err  = np.radians([52, 56])
+       dist_for_err = np.array([0.84, 0.84])
+elif galaxy_name == 'm51':
+       inc_for_err  = np.radians([20])
+       dist_for_err = np.array([9.6])
 else:
-       print('this part is working now')
-       for i in range(len(err_data.columns)):
-                err_data_col_list=np.array(err_data.iloc[:,i])
-                # print('########################################3')
-                # print(i,err_data_col_list)
-                # print('########################################3')
-                # for j in range(max_rows_A,max_rows_B):
-                err_add_nan = np.concatenate((err_data_col_list, np.full(abs(max_rows_A-max_rows_B), np.nan)))
-                #        err_data_col_list[j]=np.nan
-                err_data_long.iloc[:,i]=err_add_nan
-                # err_data.iloc[abs(max_rows_A-max_rows_B):, i] = np.nan
-# else:
-#         pass
-# print(err_data_long)
-err_radii_df = keep_substring_columns(err_data_long, 'R')[0]
-err_interpolated_df = df_interpolation(err_data_long,err_radii_df, kpc_r)
+       inc_for_err  = np.radians([30])
+       dist_for_err = np.array([5.5])
 
-##################################################################
-# err_interpolated_df = df_interpolation(err_data,err_radii_df, kpc_r)
+#################################################################################################################
 
-interpolated_df = molfrac_to_H2_new(interpolated_df)
-interpolated_df_corrected = molfrac_to_H2_new(interpolated_df_corrected)
-print('                                            ')
-# print(len(interpolated_df.iloc[:,0]))
-# print(len(interpolated_df_corrected.iloc[:,0]))
-# print(len(err_interpolated_df.iloc[:,0]))
+# raw_data from combined_data.csv is converted to correct units and corrected for distance and inclination
+# raw_data_astro_units_kpc implies that radii are in kpc and observables in astro units
+raw_data_astro_units_kpc = incl_distance_correction(raw_data_astro_units, distance_new = nDIST_kpc, distance_old = oDIST_kpc,\
+                        i_new = np.radians(nINC_deg), i_old = np.radians(oINC_deg))
 
-print(interpolated_df)
-print(interpolated_df_corrected)
-# print(err_data)
-add_temp(temp_fit,interpolated_df)
-add_temp(temp_fit,interpolated_df_corrected)
+# obtain slope and intercept for temperature fit
+temp_fit = np.genfromtxt(f'temp_{galaxy_name}.csv', skip_header = 1, delimiter = ',')
+#################################################################################################################
 
-# print('                                            ')
-# print(len(interpolated_df.iloc[:,0]))
-# print(len(interpolated_df_corrected.iloc[:,0]))
-# print(len(err_interpolated_df.iloc[:,0]))
+raw_data_astro_units_kpc = vcirc_to_qomega(raw_data_astro_units_kpc, False) #raw_data contain v_circ also
+raw_data_radii_df_kpc    = keep_substring_columns(raw_data_astro_units_kpc, 'r ')[0]
 
+# error data D and i correction
+err_data_astro_units_kpc = incl_distance_correction(err_data_astro_units, distance_new = nDIST_kpc, distance_old = dist_for_err,\
+                            i_new = np.radians(nINC_deg), i_old = inc_for_err) #correcting errors for D and i
+err_radii_df_kpc         = keep_substring_columns(err_data_astro_units_kpc, 'R')[0]
 
-nan_mask                  = np.isnan(interpolated_df)
-nan_mask_corrected        = np.isnan(interpolated_df_corrected)
-interpolated_df           = interpolated_df[~(nan_mask.sum(axis=1)>0)]
-interpolated_df_corrected = interpolated_df_corrected[~(nan_mask_corrected.sum(axis=1)>0)]
+# coarsest_radii_mask = raw_data_radii_df_kpc.isnull().sum().idxmax()
 
-nan_mask = np.isnan(err_interpolated_df)
-err_interpolated_df = err_interpolated_df[~(nan_mask.sum(axis=1)>0)]
+# choosing coarsest radius depending on moldata switch
+if switch['incl_moldat'] == 'No':
+        # drop sigma_H2 column from raw_data and make new copy
+        raw_data_drop_sigmaH2 = raw_data_astro_units_kpc.copy()
+        raw_data_drop_sigmaH2 = remove_data(raw_data_drop_sigmaH2, 'sigma_H2')
+        radii_df_drop_sigmaH2 = keep_substring_columns(raw_data_drop_sigmaH2, 'r ')[0]
+        coarsest_radii_mask   = radii_df_drop_sigmaH2.isnull().sum().idxmax()
+        kpc_r                 = radii_df_drop_sigmaH2[coarsest_radii_mask].to_numpy()
+else:
+        # moldata is included and no need to remove sigma_H2 column
+        # proceed to next step 
+        coarsest_radii_mask = raw_data_radii_df_kpc.isnull().sum().idxmax()
+        kpc_r               = raw_data_radii_df_kpc[coarsest_radii_mask].to_numpy()
 
-print('             3                               ')
-print(interpolated_df.iloc[:,0])
-print(interpolated_df_corrected.iloc[:,0])
-# print(err_interpolated_df.iloc[:,0])
+interpolated_df_astro_units_kpc = df_interpolation(raw_data_astro_units_kpc,raw_data_radii_df_kpc, kpc_r)
+
+###############################################################################################
+
+# error data length is matched with raw data length by adding nan
+max_rows_A = max(len(err_data_astro_units_kpc[col]) for col in err_data_astro_units_kpc.columns)
+max_rows_B = max(len(interpolated_df_astro_units_kpc[col]) for col in interpolated_df_astro_units_kpc.columns)
+
+err_data_long = pd.DataFrame(0, index=range(max(max_rows_A,max_rows_B)), columns=err_data_astro_units_kpc.columns)
+
+if max_rows_A > max_rows_B: # err_data has greater length. nan added to interpolated_df
+#        print('err_data has greater length. nan added to interpolated_df')
+       for i in range(len(interpolated_df_astro_units_kpc.columns)):
+                interpolated_df_astro_units_kpc.iloc[abs(max_rows_A-max_rows_B):, i] = np.nan
+else:
+#        print('interpolated_df has greater length. nan added to err_data')
+       for i in range(len(err_data_astro_units_kpc.columns)):
+                err_data_col_list       = np.array(err_data_astro_units_kpc.iloc[:,i])
+                err_add_nan             = np.concatenate((err_data_col_list, np.full(abs(max_rows_A-max_rows_B), np.nan)))
+                err_data_long.iloc[:,i] = err_add_nan
+
+err_radii_df_kpc                    = keep_substring_columns(err_data_long, 'R')[0]
+err_interpolated_df_astro_units_kpc = df_interpolation(err_data_long,err_radii_df_kpc, kpc_r)
+################################################################################################
+
+# adding sigma_H2 data to interpolated_df for M31 & adding temperature data
+interpolated_df_astro_units_kpc = molfrac_to_H2(interpolated_df_astro_units_kpc, False)
+add_temp(temp_fit,interpolated_df_astro_units_kpc)
+
+# remove NaN values from interpolated_df and err_interpolated_df
+nan_mask                         = np.isnan(interpolated_df_astro_units_kpc)
+interpolated_df_astro_units_kpc  = interpolated_df_astro_units_kpc[~(nan_mask.sum(axis=1)>0)]
+
+nan_mask                            = np.isnan(err_interpolated_df_astro_units_kpc)
+err_interpolated_df_astro_units_kpc = err_interpolated_df_astro_units_kpc[~(nan_mask.sum(axis=1)>0)]
 
 #########################################################################################
-#m51 issue resolution
-num_rows_a = len(interpolated_df.iloc[:,0])
-num_rows_b = len(interpolated_df_corrected.iloc[:,0])
-print('len of ip_df ',num_rows_a,num_rows_b)
-if galaxy_name=='m51':# or galaxy_name=='ngc6946':
-        
 
-        # Compare the number of rows
-        if num_rows_a != num_rows_b:
-                print('this worked')
-        # Determine which dataframe has more rows
-                if num_rows_a > num_rows_b:
-                        print('a>b')
-
-                        # Delete rows from dataframe 'a' to make the row numbers equal
-                        a = interpolated_df.iloc[:num_rows_b, :]
-                        interpolated_df = a
-
-                else:
-                        # Delete rows from dataframe 'b' to make the row numbers equal
-                        b = interpolated_df_corrected.iloc[:num_rows_a, :]
-                        interpolated_df_corrected = b
-
+# difference in length between model_f and interpolated_df
+if len(interpolated_df_astro_units_kpc.iloc[:,0]) != len(model_f[0]):
+        if len(interpolated_df_astro_units_kpc.iloc[:,0]) > len(model_f[0]):
+        #        print('interpolated_df.iloc[:,0])>len(model_f[0] (if case)')
+                interpolated_df_astro_units_kpc = interpolated_df_astro_units_kpc.iloc[:len(model_f[0]), :]
         else:
-        # If the number of rows is equal, no action is needed
-                pass
-elif galaxy_name=='ngc6946':
-       # Compare the number of rows
-        if num_rows_a != num_rows_b:
-                print('this worked')
-        # Determine which dataframe has more rows
-                if num_rows_a > num_rows_b:
-                        print('a>b')
+        #        print('interpolated_df.iloc[:,0])<len(model_f[0] (else case)')
+                for i in range(len(model_f)):
+                      # Initialize an empty list to store the modified elements
+                        new_model_f = []
 
-                        # Delete rows from dataframe 'a' to make the row numbers equal
-                        a = interpolated_df.iloc[:num_rows_b, :]
-                        interpolated_df = a
+                        # Loop over each element in model_f
+                        for i in range(len(model_f)):
+                        # Slice model_f[i] to match the length of interpolated_df.iloc[:,0]
+                        # and append it to new_model_f
+                                new_model_f.append(model_f[i][:len(interpolated_df_astro_units_kpc.iloc[:,0])])
 
-                else:
-                        # Delete rows from dataframe 'b' to make the row numbers equal
-                        b = interpolated_df_corrected.iloc[:num_rows_a, :]
-                        interpolated_df_corrected = b
-
-        else:
-        # If the number of rows is equal, no action is needed
-                pass
-       
-else:
-        pass
+                        # Convert new_model_f to a tuple
+                        model_f = tuple(new_model_f)
 #########################################################################################
-# #remove nans
-# nan_mask = np.isnan(raw_data)
-# raw_data = raw_data[~(nan_mask.sum(axis=1)>0)]
 
-# nan_mask_corrected = np.isnan(raw_data_corrected)
-# raw_data_corrected = raw_data_corrected[~(nan_mask_corrected.sum(axis=1)>0)]
-
-
-
-#interpolated_df.dropna()
+# unit conversions for data
 # Changed for m51 and ngc6946
 if galaxy_name == 'm31' or galaxy_name == 'm33':
     m_to_gconv = 1e3
 else:
     m_to_gconv = 1
 
-if galaxy_name=='m31': #since there is extra molfrac list here at 2nd last element
-    conv_factors=np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), 1,cm_km/cm_kpc,cm_km,
+# Order followed: kpc_r,  sigma_tot, sigma_HI, sigma_H2, q, \Omega,  sigma_sfr, T, extras
+if galaxy_name   == 'm31': # since there is extra molfrac list here at 2nd last element
+    conv_factors = np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), 1,cm_km/cm_kpc,cm_km,
             g_Msun/((s_Myr*m_to_gconv)*(cm_pc**2)),1,1])
 else:
-    conv_factors=np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), cm_km,1,cm_km/cm_kpc,
+    conv_factors = np.array([1, (g_Msun/(cm_pc**2) ), g_Msun/(cm_pc**2), g_Msun/(cm_pc**2), 1,cm_km/cm_kpc,cm_km,
             g_Msun/((s_Myr*m_to_gconv)*(cm_pc**2)),1])
-# print('from data common',interpolated_df)
 
-interpolated_df           = interpolated_df*conv_factors
-interpolated_df_corrected = interpolated_df_corrected*conv_factors
+interpolated_df_cgs_kpc = interpolated_df_astro_units_kpc*conv_factors
 
-if galaxy_name=='m31' or galaxy_name=='m33':
-    conv_factors=np.array([1,cm_km,1])
+# unit conversions for error data
+if galaxy_name   == 'm31':
+        conv_factors=np.array([1,cm_km,1])
+elif galaxy_name == 'm33':
+        conv_factors = np.array([1,cm_km,g_Msun/(cm_pc**2)])
 else:
-    conv_factors=np.array([1,cm_km])
+        conv_factors = np.array([1,cm_km])
 
-err_interpolated_df = err_interpolated_df*conv_factors
+err_interpolated_df_cgs = err_interpolated_df_astro_units_kpc*conv_factors
 
-# print(len(interpolated_df.iloc[:,0]))
-# print(len(interpolated_df_corrected.iloc[:,0]))
-# print(len(err_interpolated_df.iloc[:,0]))
+# in data folder, save the interpolated data in cgs units
+os.chdir(os.path.join(base_path,'data'))
+err_interpolated_df_cgs.to_csv(f'error_interpolated_{galaxy_name}.csv', index = False)
+# return to base path
+os.chdir(base_path)
+#########################################################################################
 
-# print(interpolated_df)
-# print(interpolated_df_corrected)
-# print(err_data)
-# print(old_dist,old_i)
-#nDIST, oDIST, nINC, oINC
-#functions for error calculations start here
-
-#unit conversions for all functions
-oDIST=oDIST*cm_kpc*(10**3)
-nDIST=nDIST*cm_kpc*(10**3)
+# unit conversions for all functions
+oDIST_cm     = oDIST_kpc*cm_kpc*(10**3) # Mpc to cm conversion
+nDIST_cm     = nDIST_kpc*cm_kpc*(10**3)
         
-oINC=np.radians(oINC)
-nINC=np.radians(nINC)
+oINC_rad     = np.radians(oINC_deg)
+nINC_rad     = np.radians(nINC_deg)
 
-err_nDIST=err_nDIST*cm_kpc*(10**3)
-err_oDIST=err_oDIST*cm_kpc*(10**3)
+err_nDIST_cm = err_nDIST_kpc*cm_kpc*(10**3) # Mpc to cm conversion
+err_oDIST_cm = err_oDIST_kpc*cm_kpc*(10**3)
 
-err_nINC=np.radians(err_nINC)
-err_oINC=np.radians(err_oINC)
+err_nINC_rad = np.radians(err_nINC_deg)
+err_oINC_rad = np.radians(err_oINC_deg)
 
-kpc_r=interpolated_df['kpc_r']
-cm_r=kpc_r*cm_kpc
+kpc_r        = interpolated_df_cgs_kpc['kpc_r']
+cm_r         = kpc_r*cm_kpc # kpc to cm conversion
+#########################################################################################
 
-def err_omega(omega,vcirc,sigma_v): #omega=columns_as_arrays[4]
-        if galaxy_name=='m31' or galaxy_name=='m33':
-                u=4
+# obtaining data with no inc & D correction
+# to be used in relative error calculation
+sigmatot_reverted_cgs = interpolated_df_cgs_kpc.iloc[:,1]*(np.cos(oINC_rad[0])/np.cos(nINC_rad))
+vcirc_reverted_cgs    = interpolated_df_cgs_kpc.iloc[:,6]*(np.sin(oINC_rad[-2])/np.sin(nINC_rad))*(nDIST_cm/oDIST_cm[-2])
+sigmaHI_reverted_cgs  = interpolated_df_cgs_kpc.iloc[:,2]*(np.cos(oINC_rad[1])/np.cos(nINC_rad))
+
+if galaxy_name == 'm31':
+        # indexing different for m31 as molfrac is used to calculate sigma_H2
+        # molfrac has -1 index, sigma_sfr has -2 index 
+        # sigma_HI has same index as other galaxies, but has different col name due to Claude/Chemin switch
+        molfrac_reverted_cgs  = interpolated_df_cgs_kpc['molfrac']*(np.cos(oINC_rad[-1])/np.cos(nINC_rad))
+        sigmaSFR_reverted_cgs = interpolated_df_cgs_kpc['sigma_sfr']*(np.cos(oINC_rad[-2])/np.cos(nINC_rad))
+
+else:
+        sigmaH2_reverted_cgs  = interpolated_df_cgs_kpc['sigma_H2']*(np.cos(oINC_rad[2])/np.cos(nINC_rad))
+        sigmaSFR_reverted_cgs = interpolated_df_cgs_kpc['sigma_sfr']*(np.cos(oINC_rad[-1])/np.cos(nINC_rad))
+
+
+#########################################################################################
+
+# Functions for error propagation
+
+# error in omega
+def err_omega(omega, vcirc, sigma_v):
+        
+        sigma_v = [sigma_v.iloc[i] for i in range(len(kpc_r))]
+
+        if galaxy_name == 'm31':
+                u = 2 # different as molfrac used for sigma_H2 is at -1 index
         else:
-                u=3
-        # sigma_v=[sigma_v[i]/np.sin(nINC) for i in range(len(kpc_r))]
-        # print('inc and d',oDIST[u],nDIST,oINC[u],nINC)
-        # term1 = [(oDIST[u]*np.sin(oINC[u])*sigma_v[i])/(nDIST*cm_r[i]*np.sin(nINC)) for i in range(len(kpc_r))]
-        term1 = [(oDIST[u]*np.sin(oINC[u])*sigma_v.iloc[i])/(nDIST*cm_r.iloc[i]*np.sin(nINC)) for i in range(len(kpc_r))]
-        # print('1',term1)
-
-        term2 = [(vcirc.iloc[i]*oDIST[u]*np.cos(oINC[u])*err_oINC[u])/((np.sin(nINC))*cm_r.iloc[i]*nDIST) for i in range(len(kpc_r))]       
-        # print('2',term2)
-        term3 = [(vcirc.iloc[i]*oDIST[u]*np.sin(oINC[u])*np.cos(nINC)*err_nINC)/(((np.sin(nINC))**2)*cm_r.iloc[i]*nDIST) for i in range(len(kpc_r))]
-        # print('3',term3)
-        term4 = [(vcirc.iloc[i]*np.sin(oINC[u])*err_oDIST[u])/((np.sin(nINC))*cm_r.iloc[i]*nDIST) for i in range(len(kpc_r))]
-        # print('4',term4)
-        term5 = [(vcirc.iloc[i]*np.sin(oINC[u])*oDIST[u]*err_nDIST)/((np.sin(nINC))*cm_r.iloc[i]*(nDIST**2)) for i in range(len(kpc_r))]
-        # print('5',term5)
-
-        # # print('2',term2)
-        # term3 = [(vcirc[i]*oDIST[u]*np.sin(oINC[u])*np.cos(nINC)*err_nINC)/(((np.sin(nINC))**2)*cm_r[i]*nDIST) for i in range(len(kpc_r))]
-        # # print('3',term3)
-        # term4 = [(vcirc[i]*np.sin(oINC[u])*err_oDIST[u])/((np.sin(nINC))*cm_r[i]*nDIST) for i in range(len(kpc_r))]
-        # # print('4',term4)
-        # term5 = [(vcirc[i]*np.sin(oINC[u])*oDIST[u]*err_nDIST)/((np.sin(nINC))*cm_r[i]*(nDIST**2)) for i in range(len(kpc_r))]
-        # # print('5',term5)
-        err_omega     = [np.sqrt(term1[i]**2 +term2[i]**2 + term3[i]**2 + term4[i]**2 + term5[i]**2) for i in range(len(kpc_r))]
+                u = 3
+        
+        term1 = [(oDIST_cm[u]*np.sin(oINC_rad[u])*sigma_v[i])/(nDIST_cm*cm_r.iloc[i]*np.sin(nINC_rad)) for i in range(len(kpc_r))]
+        term2 = [(vcirc.iloc[i]*oDIST_cm[u]*np.cos(oINC_rad[u])*err_oINC_rad[u])/((np.sin(nINC_rad))*cm_r.iloc[i]*nDIST_cm) for i in range(len(kpc_r))]       
+        term3 = [(vcirc.iloc[i]*oDIST_cm[u]*np.sin(oINC_rad[u])*np.cos(nINC_rad)*err_nINC_rad)/(((np.sin(nINC_rad))**2)*cm_r.iloc[i]*nDIST_cm) for i in range(len(kpc_r))]
+        term4 = [(vcirc.iloc[i]*np.sin(oINC_rad[u])*err_oDIST_cm[u])/((np.sin(nINC_rad))*cm_r.iloc[i]*nDIST_cm) for i in range(len(kpc_r))]
+        term5 = [(vcirc.iloc[i]*np.sin(oINC_rad[u])*oDIST_cm[u]*err_nDIST_cm)/((np.sin(nINC_rad))*cm_r.iloc[i]*(nDIST_cm**2)) for i in range(len(kpc_r))]
+        
+        err_omega = [np.sqrt(term1[i]**2 +term2[i]**2 + term3[i]**2 + term4[i]**2 + term5[i]**2) for i in range(len(kpc_r))]
+        
         rel_err_omega = err_omega/omega
-        # print('omega err',rel_err_omega)
         return rel_err_omega
-# err_omega(interpolated_df_corrected['\Omega'],interpolated_df['vcirc_claude kms'],err_interpolated_df['error vcirc kms'])
 
-def err_sigmaHI(sigmaHI_corrected,sigmaHI_not_corrected,percent_sigmaHI_err): #sigmaHI_err is set to 6 percent, sigmaHI=columns_as_arrays[2]
-        if galaxy_name=='m31' or galaxy_name=='m33':
-                u=2
+# error in sigma_HI
+def err_sigmaHI(sigmaHI_corrected, sigmaHI_not_corrected, percent_sigmaHI_err): # sigmaHI_err = 6 percent, sigmaHI = columns_as_arrays[2]
+        
+        if galaxy_name == 'm31' or galaxy_name == 'm33':
+                u = 2
         else:
-                u=1
-        sigmaHI_err=sigmaHI_not_corrected*percent_sigmaHI_err
-        term1 = [(sigmaHI_err.iloc[i]*np.cos(nINC))/np.cos(oINC[u]) for i in range(len(kpc_r))]        # print('1',term1)
-        # print('term1',term1)
-        term2 = [(sigmaHI_not_corrected.iloc[i]*np.sin(nINC)*err_nINC)/np.cos(oINC[u]) for i in range(len(kpc_r))]        # print('2',term2)
-        # print('term2',term2)
+                u = 1
+
+        sigmaHI_err = sigmaHI_not_corrected*percent_sigmaHI_err
+        term1       = [(sigmaHI_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]        # print('1',term1)
+        term2       = [(sigmaHI_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]        # print('2',term2)
+        term3       = [(sigmaHI_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[u]*np.sin(oINC_rad[u]))/((np.cos(oINC_rad[2]))**2) for i in range(len(kpc_r))]        # print('3',term3)
         
-        term3 = [(sigmaHI_not_corrected.iloc[i]*np.cos(nINC)*err_oINC[u]*np.sin(oINC[u]))/((np.cos(oINC[2]))**2) for i in range(len(kpc_r))]        # print('3',term3)
-        # print('term3',term3)
-        
-        err_sigmaHI= [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]        
+        err_sigmaHI     = [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]        
         rel_err_sigmaHI = [err_sigmaHI[i]/sigmaHI_corrected.iloc[i] for i in range(len(kpc_r))]
-        # print('rel_errHI',rel_err_sigmaHI)
-        # print('errHI',err_sigmaHI)
         
-        return err_sigmaHI,rel_err_sigmaHI
+        return err_sigmaHI, rel_err_sigmaHI
 
-# err_sigmaHI(interpolated_df_corrected['sigma_HI_claude'],interpolated_df['sigma_HI_claude'],0.06)
-
-#no need of corrected sigmas here as relative error isnt required
-def err_sigmaH2(sigmaHI_not_corrected,molfrac_or_sigmaH2,percent_sigmaHI_err,molfrac_err,percent_sigmaH2_err):
-        # sigmaHI_not_corrected=(g_Msun/(cm_pc**2) )*sigmaHI_not_corrected
+# no need of corrected sigmas here as relative error isnt required
+def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, molfrac_err, percent_sigmaH2_err): 
         
-        if switch['incl_moldat']=='No':
-                print('considering ONLY HI surface density')
-                err_sigmaH2=[0 for i in range(len(kpc_r))]
-                
-        else:
-                if galaxy_name=='m31':
-                        molfrac=molfrac_or_sigmaH2
-                        # sigmaH2 = [(molfrac[i]/(1-molfrac[i]))*sigmaHI_not_corrected[i] for i in range(len(kpc_r))]
-                        molfrac_err_tot = [np.sqrt(((raw_data['molfrac'][i]*np.sin(nINC)*err_nINC)/(np.cos(oINC[-1])))**2 + ((raw_data['molfrac'][i]*np.cos(nINC)*err_oINC[-1]*np.sin(oINC[-1]))/(np.cos(oINC[-1]))**2)**2 + (molfrac_err[i]*np.cos(nINC))/np.cos(oINC[-1])**2) for i in range(len(kpc_r))]
-                        sigmaHI_err=sigmaHI_not_corrected*percent_sigmaHI_err
+        if switch['incl_moldat'] == 'No':
+                # set err_sigmaH2 to 0
+                err_sigmaH2 = [0 for i in range(len(kpc_r))]
+        else: # molecular gas is included
+                if galaxy_name == 'm31':
+                        molfrac         = molfrac_or_sigmaH2
+                        # error in molfrac due to uncertainty in inclination, distance and molfrac data
+                        molfrac_err_tot = [np.sqrt(((molfrac[i]*np.sin(nINC_rad)*err_nINC_rad)/(np.cos(oINC_rad[-1])))**2 + 
+                                                   ((molfrac[i]*np.cos(nINC_rad)*err_oINC_rad[-1]*np.sin(oINC_rad[-1]))/(np.cos(oINC_rad[-1]))**2)**2 + 
+                                                   (molfrac_err[i]*np.cos(nINC_rad))/np.cos(oINC_rad[-1])**2) for i in range(len(kpc_r))]
+                        sigmaHI_err     = sigmaHI_not_corrected*percent_sigmaHI_err
                         
-                        term1= [(sigmaHI_err.iloc[i]*molfrac.iloc[i])/(1-molfrac.iloc[i]) for i in range(len(kpc_r))]                        
-                        
-                        term2= [(sigmaHI_not_corrected.iloc[i]*molfrac_err_tot.iloc[i])/((1-molfrac.iloc[i])**2) for i in range(len(kpc_r))]                        
-                        err_sigmaH2 = np.sqrt(term1**2+ term2**2)
-                        # rel_err_sigmaH2 = [err_sigmaH2[i]/sigmaH2 for i in range(len(kpc_r))]
-                        # print('sigmah2err',rel_err_sigmaH2)
-
+                        term1       = [(sigmaHI_err.iloc[i]*molfrac.iloc[i])/(1-molfrac.iloc[i]) for i in range(len(kpc_r))]                        
+                        term2       = [(sigmaHI_not_corrected.iloc[i]*molfrac_err_tot[i])/((1-molfrac.iloc[i])**2) for i in range(len(kpc_r))]                        
+                        err_sigmaH2 = [np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))] 
                 else:
-                        if galaxy_name=='m33':
-                            u=3
-                        else:
-                            u=2
-                        sigmaH2_not_corrected=molfrac_or_sigmaH2
-                        percent_sigmaH2_err=0.06
-                        sigmaH2_err=sigmaH2_not_corrected*percent_sigmaH2_err
+                        if galaxy_name == 'm33':
+                                u = 3 # extra column due to Koch data
+                                sigmaH2_not_corrected = molfrac_or_sigmaH2
+                                sigmaH2_err           = err_interpolated_df_cgs['error sigma_H2']
 
-                        # index_for_sigmaH2=((list(columns_as_arrays)).index('sigma_H2'))-1
-                        term1 = [(sigmaH2_err.iloc[i]*np.cos(nINC))/np.cos(oINC[u]) for i in range(len(kpc_r))]
-                        # print('1',term1)
-                        term2 = [(sigmaH2_not_corrected.iloc[i]*np.sin(nINC)*err_nINC)/np.cos(oINC[u]) for i in range(len(kpc_r))]
-                        # print('2',term2)
-                        term3 = [(sigmaH2_not_corrected.iloc[i]*np.cos(nINC)*err_oINC[u]*np.sin(oINC[u]))/(np.cos(oINC[u]))**2 for i in range(len(kpc_r))]
-                        # print('3',term3)
-                        err_sigmaH2= [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
-                        # rel_err_sigmaH2 = [err_sigmaH2[i]/sigmaH2_not_corrected for i in range(len(kpc_r))]
-                        # print('sigmah2err',rel_err_sigmaH2)
+                        else:
+                                u = 2
+                                sigmaH2_not_corrected = molfrac_or_sigmaH2
+                                percent_sigmaH2_err   = 0.06
+                                sigmaH2_err           = sigmaH2_not_corrected*percent_sigmaH2_err
+
+                        term1 = [(sigmaH2_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
+                        term2 = [(sigmaH2_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
+                        term3 = [(sigmaH2_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[u]*np.sin(oINC_rad[u]))/(np.cos(oINC_rad[u]))**2 for i in range(len(kpc_r))]
+                        
+                        err_sigmaH2 = [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
         return err_sigmaH2
 
-# errsigmah2=err_sigmaH2(interpolated_df['sigma_HI_claude'],interpolated_df['sigma_H2'],0.06,err_interpolated_df['error molfrac'],0.06)
-# print(errsigmah2)
+# error in sigma_gas
+# combine sigma_HI and sigma_H2 errors
+def err_sigmagas(sigmaHI_corr, sigmaH2_corr, sigmaHI_no_corr, sigmaH2_or_molfrac_no_corr, err_mu, err_mu_prime):
+        
+        mu       = params['mu']       # 14/11
+        mu_prime = params['mu_prime'] # 2.4
 
-def err_sigmagas(sigmaHI_corr,sigmaH2_corr,sigmaHI_no_corr,sigmaH2_no_corr,err_mu):
-        mu= params['mu']
-        #change this. its not mu but molfrac thats needed in the equation
-        # sigmaH2_no_corr=sigmaHI_no_corr*(mu_no_corr/(1-mu_no_corr))
-        #to get corrected sigmagas
-        if galaxy_name=='m31':
-                sigmaH2_err=err_sigmaH2(sigmaHI_no_corr,sigmaH2_no_corr,0.06,err_interpolated_df['error molfrac'],0.06)
+        # to choose corrected sigmagas
+        if galaxy_name == 'm31':
+                molfrac_no_corr = sigmaH2_or_molfrac_no_corr
+                sigmaH2_err     = err_sigmaH2(sigmaHI_no_corr, molfrac_no_corr, 0.06, err_interpolated_df_astro_units_kpc['error molfrac'], 0.06)
         else:
-                sigmaH2_err=err_sigmaH2(sigmaHI_no_corr,sigmaH2_no_corr,0.06,0,0.06)
+                sigmaH2_no_corr = sigmaH2_or_molfrac_no_corr
+                sigmaH2_err     = err_sigmaH2(sigmaHI_no_corr, sigmaH2_no_corr, 0.06, 0, 0.06)
                
-        sigmaHI_err=err_sigmaHI(sigmaHI_corr,sigmaHI_no_corr,0.06)[0]
+        sigmaHI_err = err_sigmaHI(sigmaHI_corr, sigmaHI_no_corr, 0.06)[0]
 
-        if switch['incl_moldat']=='Yes':
-                sigmagas_corr=sigmaHI_corr+ sigmaH2_corr #columns_as_arrays[2]+columns_as_arrays[3]
-                sigmagas_no_corr=sigmaHI_no_corr+sigmaH2_no_corr
-                # sigmaH2_err=err_sigmaH2(sigmaH2_no_corr,sigmaH2_corr,0.06)
+        # if moldat is included, sigma_gas equation is modified
+        if switch['incl_moldat'] == 'Yes':
+                sigmagas_corr  = (3*mu/(4-mu))*sigmaHI_corr + (mu/(4-mu))*sigmaH2_corr #columns_as_arrays[2]+columns_as_arrays[3]
+                if galaxy_name == 'm31':
+                        sigmaH2_no_corr = sigmaHI_no_corr*(molfrac_no_corr/(1-molfrac_no_corr))
         else:
-                sigmagas_corr=sigmaHI_corr
-                sigmagas_no_corr=sigmaHI_no_corr
-                # sigmaH2_err=[0 for i in range(len(kpc_r))]
+                sigmagas_corr  = sigmaHI_corr
 
-        mu_err=[err_mu*mu for i in range(len(kpc_r))]
-        #might have to changed in case of moldat==yes
-        sigmagas_err=[np.sqrt(sigmaHI_err[i]**2 + sigmaH2_err[i]**2) for i in range(len(kpc_r))]
-        # print('########################################################################')
-        # print('step1',sigmagas_err)
-        term1= [(sigmagas_err[i]*(3*mu/(4-mu))) for i in range(len(kpc_r))]
-        # print('term1',term1)
-        term2= [(sigmagas_no_corr.iloc[i]*(12*mu_err[i]/(4-mu)**2)) for i in range(len(kpc_r))]
-        # print('term2',term2)
-        err_sigmagas= [np.sqrt((term1[i]**2 + term2[i]**2)) for i in range(len(kpc_r))]
-        # print('err',err_sigmagas)
-        rel_err_sigmagas= [err_sigmagas[i]/sigmagas_corr.iloc[i] for i in range(len(kpc_r))]
-        # print('rel_err_sigmagas',rel_err_sigmagas)
+        mu_err       = [err_mu*mu for i in range(len(kpc_r))]
+        mu_prime_err = [err_mu_prime*mu_prime for i in range(len(kpc_r))]
+
+        term1            = [(sigmaHI_err[i]*(3*mu/(4-mu))) for i in range(len(kpc_r))]
+        term2            = [(sigmaHI_no_corr.iloc[i]*(12*mu_err[i]/(4-mu)**2)) for i in range(len(kpc_r))]
+        term3            = [(sigmaH2_err[i]*(mu_prime/(4-mu_prime))) for i in range(len(kpc_r))]
+        
+        if switch['incl_moldat'] == 'Yes':
+                term4            = [(sigmaH2_no_corr.iloc[i]*(4*mu_prime_err[i]/(4-mu_prime)**2)) for i in range(len(kpc_r))]
+        else:
+                term4            = [0 for i in range(len(kpc_r))]
+        
+        err_sigmagas     = [np.sqrt((term1[i]**2 + term2[i]**2 + term3[i]**2 + term4[i]**2)) for i in range(len(kpc_r))]
+        rel_err_sigmagas = [err_sigmagas[i]/sigmagas_corr.iloc[i] for i in range(len(kpc_r))]
         return rel_err_sigmagas
 
-# err_sigmagas(interpolated_df_corrected['sigma_HI_claude'],interpolated_df_corrected['sigma_H2'],interpolated_df['sigma_HI_claude'],interpolated_df['sigma_H2'],0.1)
-
-def err_sigmaSFR(sigmaSFR_corrected,sigmaSFR_not_corrected,percent_sigmaSFR_err):
-        # sigmaSFR_not_corrected=sigmaSFR_not_corrected
-        sigmaSFR_err=sigmaSFR_not_corrected*percent_sigmaSFR_err
-        if galaxy_name=='m31':
-                u=-2
+# error in sigma_SFR
+def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_err):
+        
+        sigmaSFR_err   = sigmaSFR_not_corrected*percent_sigmaSFR_err
+        if galaxy_name == 'm31':
+                u = -2
         else:
-                u=-1
-        term1 = [(sigmaSFR_err.iloc[i]*np.cos(nINC))/np.cos(oINC[u]) for i in range(len(kpc_r))]
-        # print('1',term1)
-        term2 = [(sigmaSFR_not_corrected.iloc[i]*np.sin(nINC)*err_nINC)/np.cos(oINC[u]) for i in range(len(kpc_r))]
-        # print('2',term2)
-        term3 = [(sigmaSFR_not_corrected.iloc[i]*np.cos(nINC)*err_oINC[u]*np.sin(oINC[u]))/(np.cos(oINC[u]))**2 for i in range(len(kpc_r))]
-        # print('3',term3)
-        err_sigmaSFR= [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
-        # print('err',err_sigmaSFR)
+                u = -1
+
+        term1            = [(sigmaSFR_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
+        term2            = [(sigmaSFR_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
+        term3            = [(sigmaSFR_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[u]*np.sin(oINC_rad[u]))/(np.cos(oINC_rad[u]))**2 for i in range(len(kpc_r))]
+        
+        err_sigmaSFR     = [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
         rel_err_sigmaSFR = [err_sigmaSFR[i]/sigmaSFR_corrected.iloc[i] for i in range(len(kpc_r))]
-        # print('relerrSFR',rel_err_sigmaSFR)
         return rel_err_sigmaSFR
 
-# err_sigmaSFR(interpolated_df_corrected['sigma_sfr'],interpolated_df['sigma_sfr'],0.1)
+# error in sigma_tot
+def err_sigmatot(sigmatot_corrected, sigmatot_not_corrected, percent_sigmatot_err):
+        
+        if galaxy_name == 'm33':
+                gamma     = 0.52*g_Msun/((cm_pc)**2) # converting to cgs units
+                err_gamma = 0.1*g_Msun/((cm_pc)**2)  # converting to cgs units
 
-def err_sigmatot(sigmatot_corrected,sigmatot_not_corrected,percent_sigmatot_err):
-        # sigmatot_not_corrected=(g_Msun/(cm_pc**2))*sigmatot_not_corrected
-        if galaxy_name=='m33':
-                gamma=0.52*g_Msun/((cm_pc)**2)
-                err_gamma=0.1*g_Msun/((cm_pc)**2)
-                mu0=18.01
-                kpc_Rd=1.82*cm_kpc 
-                c36=24.8
+                # values as in Kam+15
+                mu0       = 18.01 # mag arsec^2
+                sigma_mu0 = 0.03  # mag arsec^2
+                kpc_Rd    = 1.82  # kpc
+                cm_Rd     = kpc_Rd*cm_kpc # cm
+                cm_Rd_err = 0.02*cm_kpc   # cm
+                c36       = 24.8
+                mu        = [(mu0+(1.10857*(cm_r.iloc[i]/cm_Rd))) for i in range(len(kpc_r))] # Kam+15
+
+                term1_sigma_mu = [sigma_mu0 for i in range(len(kpc_r))]
+                term2_sigma_mu = [(1.10857*cm_r.iloc[i]*cm_Rd_err/cm_Rd**2) for i in range(len(kpc_r))]
+                term3_sigma_mu = [((1.10857)/cm_Rd)*cm_r.iloc[i]*np.sqrt(((err_nDIST_cm)/(nDIST_cm))**2 + ((nDIST_cm*err_oDIST_cm[0])/(oDIST_cm[0])**2)**2) for i in range(len(kpc_r))]
                 
-                mu=[(mu0+(1.10857*(cm_r.iloc[i]/kpc_Rd))) for i in range(len(kpc_r))]
-                # print('mu',mu)
-                sigma_mu=[((1.10857)/kpc_Rd)*cm_r.iloc[i]*np.sqrt(((err_nDIST)/(nDIST))**2 + ((nDIST*err_oDIST[0])/(oDIST[0])**2)**2) for i in range(len(kpc_r))]
-                # print('sigmamu',sigma_mu)
-                a=[10**(-0.4*(mu[i]-c36)) for i in range(len(kpc_r))]
-                # print('a',a)
-                da_dt=[(np.log(10))*a[i] for i in range(len(kpc_r))]
-                # print('dadt',da_dt)
-                sigma_a= [-0.4*da_dt[i]*sigma_mu[i] for i in range(len(kpc_r))]
-                # print('sigmaa',sigma_a)
-                term1= [err_gamma*a[i] for i in range(len(kpc_r))]
-                # print('term1',term1)
-                term2= [gamma*sigma_a[i] for i in range(len(kpc_r))]
-                # print('term2',term2)
-                # sigmatotal=[gamma*a[i] for i in range(len(kpc_r))]
-                # print('totcalc', sigmatotal)
-                # print('actual',sigmatot_corrected)
-                err_sigmatot=[np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))]
-                # print('err',err_sigmatot)
-                # rel_err_sigmatot = [err_sigmatot[i]/sigmatot_not_corrected[i] for in range(len(kpc_r))]
+                # no squaring as mu0 is an additive constant
+                sigma_mu       = [term1_sigma_mu[i] + np.sqrt((term2_sigma_mu[i])**2 + (term3_sigma_mu[i])**2) for i in range(len(kpc_r))]
+                a              = [10**(-0.4*(mu[i]-c36)) for i in range(len(kpc_r))]
+                da_dt          = [(np.log(10))*(-0.4)*a[i] for i in range(len(kpc_r))]
+                sigma_a        = [da_dt[i]*sigma_mu[i] for i in range(len(kpc_r))]
+                term1          = [err_gamma*a[i] for i in range(len(kpc_r))]
+                term2          = [gamma*sigma_a[i] for i in range(len(kpc_r))]
+                err_sigmatot   = [np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))]
                 
         else:
-                sigmatot_err=percent_sigmatot_err*sigmatot_not_corrected
-                term1=[(sigmatot_err.iloc[i]*np.cos(nINC)/np.cos(oINC[0])) for i in range(len(kpc_r))]
-                # print('1',term1)
-                term2=[(sigmatot_not_corrected.iloc[i]*np.sin(nINC)*err_nINC/np.cos(oINC[0])) for i in range(len(kpc_r))]
-                # print('2',term2)
-                term3=[(sigmatot_not_corrected.iloc[i]*np.cos(nINC)*err_oINC[0]*np.sin(oINC[0]))/((np.cos(oINC[0]))**2) for i in range(len(kpc_r))]
-                # print('3',term3)
-                err_sigmatot= [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
+                sigmatot_err   = percent_sigmatot_err*sigmatot_not_corrected
+                term1          = [(sigmatot_err.iloc[i]*np.cos(nINC_rad)/np.cos(oINC_rad[0])) for i in range(len(kpc_r))]
+                term2          = [(sigmatot_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad/np.cos(oINC_rad[0])) for i in range(len(kpc_r))]
+                term3          = [(sigmatot_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[0]*np.sin(oINC_rad[0]))/((np.cos(oINC_rad[0]))**2) for i in range(len(kpc_r))]
+                err_sigmatot   = [np.sqrt(term1[i]**2 + term2[i]**2 + term3[i]**2) for i in range(len(kpc_r))]
         
-        rel_err_sigmatot = [err_sigmatot[i]/sigmatot_corrected.iloc[i] for i in range(len(kpc_r))]
-        # print('rel_err_sigmatot',rel_err_sigmatot)
+        rel_err_sigmatot       = [err_sigmatot[i]/sigmatot_corrected.iloc[i] for i in range(len(kpc_r))]
         return rel_err_sigmatot
 
-# err_sigmatot(interpolated_df_corrected['sigma_tot'],interpolated_df['sigma_tot'],0.1)
+# error in temperature and q
+def err_T_q(T_corrected, q_corrected):
 
-def err_T_q(T_corrected,q_corrected):
-        # print(T_corrected,q_corrected)
-        err_T=np.std(T_corrected)
-        err_q=np.std(q_corrected)
-        # print('*******************',err_T,err_q)
-        rel_err_T=[err_T/T_corrected.iloc[i] for i in range(len(kpc_r))]
-        rel_err_q=[err_q/q_corrected.iloc[i] for i in range(len(kpc_r))]
-        return rel_err_T,rel_err_q
+        err_T     = np.std(T_corrected)
+        err_q     = np.std(q_corrected)
+
+        rel_err_T = [err_T/T_corrected.iloc[i] for i in range(len(kpc_r))]
+        rel_err_q = [err_q/q_corrected.iloc[i] for i in range(len(kpc_r))]
+        
+        return rel_err_T, rel_err_q
 #################################################################################################################
-#################################################################################################################
-# interpolated_df.rename(columns={'kms_vcirc_Kam': 'vcirc'}, inplace=True)
-# interpolated_df_corrected.rename(columns={'kms_vcirc_Kam': 'vcirc'}, inplace=True)
-# hregs = ['subsonic', 'supersonic']
-# for hreg in hregs:
-#         os.chdir(os.path.join(base_path,'inputs'))
-#         exps = np.load(f'scal_exponents_{hreg}.npy')
-#         r = kpc_r.size
-#         if hreg=='supersonic':
-#                 rel_err_omega = err_omega(interpolated_df_corrected['\Omega'],interpolated_df['vcirc'],err_interpolated_df['error vcirc kms'])
 
-#         else:
-#                 rel_err_omega = err_omega(interpolated_df_corrected['\Omega'],interpolated_df['vcirc'],err_interpolated_df['error vcirc kms'])
-
-#         rel_err_sigmatot = err_sigmatot(interpolated_df_corrected['sigma_tot'],interpolated_df['sigma_tot'],0.1)
-#         rel_err_sigmagas = err_sigmagas(interpolated_df_corrected['sigma_HI'],interpolated_df_corrected['sigma_H2'],interpolated_df['sigma_HI'],interpolated_df['sigma_H2'],0.1)
-#         rel_err_sigmasfr = err_sigmaSFR(interpolated_df_corrected['sigma_sfr'],interpolated_df['sigma_sfr'],0.1)
-
-#         rel_err_T,rel_err_q=err_T_q(interpolated_df_corrected['T'],interpolated_df_corrected['q'])
-#         rel_err = np.array([rel_err_q, rel_err_omega, rel_err_sigmagas, rel_err_sigmatot,rel_err_sigmasfr, rel_err_T])
-
-#         relerr_quan = np.sqrt(np.matmul(exps**2,rel_err**2))
-#         err_quantities = model_f[1:]*relerr_quan
-
+# no D and i correction done
 hregs = ['subsonic', 'supersonic']
 for hreg in hregs:
         os.chdir(os.path.join(base_path,'inputs'))
         exps = np.load(f'scal_exponents_{hreg}.npy')
         r = kpc_r.size
-        if galaxy_name=='m31':
-                rel_err_omega=err_omega(interpolated_df_corrected['\Omega'],interpolated_df['vcirc_claude kms'],err_interpolated_df['error vcirc kms'])
-        elif galaxy_name=='m33':
-                rel_err_omega=err_omega(interpolated_df_corrected['\Omega'],interpolated_df['kms_vcirc_Kam'],err_interpolated_df['error vcirc kms'])
-        else:
-                rel_err_omega=err_omega(interpolated_df_corrected['\Omega'],interpolated_df['vcirc'],err_interpolated_df['error vcirc kms'])     
-        # print('ran till here')
-        if galaxy_name=='m33':
-                rel_err_sigmatot = err_sigmatot(interpolated_df_corrected['sigma_tot_up52'],interpolated_df['sigma_tot_up52'],0.1)
-        else:
-                rel_err_sigmatot = err_sigmatot(interpolated_df_corrected['sigma_tot'],interpolated_df['sigma_tot'],0.1)
-        if galaxy_name == 'm31':
-                rel_err_sigmagas = err_sigmagas(interpolated_df_corrected['sigma_HI_claude'],interpolated_df_corrected['sigma_H2'],interpolated_df['sigma_HI_claude'],interpolated_df['sigma_H2'],0.1)
-        else:
-                rel_err_sigmagas = err_sigmagas(interpolated_df_corrected['sigma_HI'],interpolated_df_corrected['sigma_H2'],interpolated_df['sigma_HI'],interpolated_df['sigma_H2'],0.1)
-        rel_err_sigmasfr = err_sigmaSFR(interpolated_df_corrected['sigma_sfr'],interpolated_df['sigma_sfr'],0.1)
-        rel_err_T,rel_err_q = err_T_q(interpolated_df_corrected['T'],interpolated_df_corrected['q'])
-        rel_err = np.array([rel_err_q, rel_err_omega, rel_err_sigmagas, rel_err_sigmatot,rel_err_sigmasfr, rel_err_T])
-        print('rel err', rel_err)
-        print('model_f', model_f[1])
-        relerr_quan = np.sqrt(np.matmul(exps**2,rel_err**2))
-        print('galname',galaxy_name)
-        # print('relerrquan',len(relerr_quan[0]))
 
-        print('Shape of model_f[1]:', model_f[1].shape)
-        print('Shape of relerr_quan:', relerr_quan.shape)
+        # calculate relative error in omega
+        if galaxy_name        == 'm31':
+                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])
+        elif galaxy_name      == 'm33':
+                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])
+        else:
+                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])     
+        
+        # calculate relative error in sigma_tot
+        if galaxy_name           == 'm33':
+                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot_up52'],sigmatot_reverted_cgs,0.1)
+        else:
+                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot'],sigmatot_reverted_cgs,0.1)
+        
+        # calculate relative error in sigma_gas
+        if galaxy_name           == 'm31':
+                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI_claude'],interpolated_df_cgs_kpc['sigma_H2'],sigmaHI_reverted_cgs,molfrac_reverted_cgs,0.1,0.1)
+        else:
+                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI'],interpolated_df_cgs_kpc['sigma_H2'],sigmaHI_reverted_cgs,sigmaH2_reverted_cgs,0.1,0.1)
+        
+        # calculate relative error in sigma_SFR
+        rel_err_sigmasfr    = err_sigmaSFR(interpolated_df_cgs_kpc['sigma_sfr'],sigmaSFR_reverted_cgs,0.1)
+        
+        # calculate relative error in T and q
+        rel_err_T, rel_err_q = err_T_q(interpolated_df_cgs_kpc['T'],interpolated_df_cgs_kpc['q'])
+        
+        # combine all relative errors 
+        rel_err = np.array([rel_err_q, rel_err_omega, rel_err_sigmagas, rel_err_sigmatot,rel_err_sigmasfr, rel_err_T])
+
+        # calculate error in quantities
+        relerr_quan    = np.sqrt(np.matmul(exps**2,rel_err**2))
         err_quantities = model_f[1:]*relerr_quan
-#################################################################################################################
-#################################################################################################################
-#inputting errors into a pickle file
+
+        # inputting errors into a pickle file
         os.chdir(os.path.join(base_path,'outputs'))
+        # load errors in super- and sub-sonic regimes for later comparison
         with open(f'errors_{hreg}.out', 'wb') as f:
                 pickle.dump(err_quantities, f)
+
+# saving relerr_quan to a csv file
+save_files_dir = os.path.join(base_path + r'\data\supplementary_data\{}'.format(galaxy_name))
+filename       = r'\{}_rel_err_observables_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+                                params[r'C_\alpha'],params[r'\beta'],params['A'])
+
+os.chdir(save_files_dir)
+
+rel_err_transpose = list(zip(*rel_err))
+column_names      = ['rel_err_q', 'rel_err_omega', 'rel_err_sigmagas', 'rel_err_sigmatot','rel_err_sigmasfr', 'rel_err_T']
+
+# Writing to the file
+with open(save_files_dir+filename, 'w', newline='') as csvfile:
+    csvwriter = csv.writer(csvfile)
+    csvwriter.writerow(column_names)
+    csvwriter.writerows(rel_err_transpose)
+
 print('Found the errors from the scaling relations')
- 

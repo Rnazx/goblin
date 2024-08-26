@@ -21,7 +21,7 @@ python model_predictions.py
 #python scale_exponents.py
 
 #Error aprroximation
-python error_new.py
+python error.py
 
 #Plotting
 python plot_generator.py
