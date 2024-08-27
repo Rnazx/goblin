@@ -141,8 +141,9 @@ interpolated_df = molfrac_to_H2(interpolated_df)
 add_temp(temp_fit,interpolated_df)
 
 # remove NaN 
-nan_mask        = np.isnan(interpolated_df)
-interpolated_df = interpolated_df[~(nan_mask.sum(axis=1)>0)]
+nan_mask                    = np.isnan(interpolated_df)
+interpolated_df             = interpolated_df[~(nan_mask.sum(axis=1)>0)]
+interpolated_df_astro_units = interpolated_df.copy()
 
 # converting to cgs units
 if galaxy_name == 'm31' or galaxy_name == 'm33':
@@ -159,6 +160,7 @@ os.chdir(os.path.join(base_path, 'data'))
 
 # customising file name so that it can be directly loaded to output comparison file
 interpolated_df.to_csv('data_interpolated_{}.csv'.format(galaxy_name), index = False)
+interpolated_df_astro_units.to_csv('data_interpolated_astro_units_{}.csv'.format(galaxy_name), index = False)
 
 if __name__ == '__main__': 
     print('#####  Data interpolation done #####')
