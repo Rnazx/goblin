@@ -275,6 +275,7 @@ def err_omega(omega, vcirc, sigma_v):
         else:
                 u = 3
         
+        # Equation C9 in appendix of Nazareth+24
         term1 = [(oDIST_cm[u]*np.sin(oINC_rad[u])*sigma_v[i])/(nDIST_cm*cm_r.iloc[i]*np.sin(nINC_rad)) for i in range(len(kpc_r))]
         term2 = [(vcirc.iloc[i]*oDIST_cm[u]*np.cos(oINC_rad[u])*err_oINC_rad[u])/((np.sin(nINC_rad))*cm_r.iloc[i]*nDIST_cm) for i in range(len(kpc_r))]       
         term3 = [(vcirc.iloc[i]*oDIST_cm[u]*np.sin(oINC_rad[u])*np.cos(nINC_rad)*err_nINC_rad)/(((np.sin(nINC_rad))**2)*cm_r.iloc[i]*nDIST_cm) for i in range(len(kpc_r))]
@@ -294,6 +295,7 @@ def err_sigmaHI(sigmaHI_corrected, sigmaHI_not_corrected, percent_sigmaHI_err): 
         else:
                 u = 1
 
+        # Equation C10 in appendix of Nazareth+24
         sigmaHI_err = sigmaHI_not_corrected*percent_sigmaHI_err
         term1       = [(sigmaHI_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]        # print('1',term1)
         term2       = [(sigmaHI_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]        # print('2',term2)
@@ -319,6 +321,7 @@ def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, 
                                                    (molfrac_err[i]*np.cos(nINC_rad))/np.cos(oINC_rad[-1])**2) for i in range(len(kpc_r))]
                         sigmaHI_err     = sigmaHI_not_corrected*percent_sigmaHI_err
                         
+                        # Equation C11 in appendix of Nazareth+24
                         term1       = [(sigmaHI_err.iloc[i]*molfrac.iloc[i])/(1-molfrac.iloc[i]) for i in range(len(kpc_r))]                        
                         term2       = [(sigmaHI_not_corrected.iloc[i]*molfrac_err_tot[i])/((1-molfrac.iloc[i])**2) for i in range(len(kpc_r))]                        
                         err_sigmaH2 = [np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))] 
@@ -333,7 +336,8 @@ def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, 
                                 sigmaH2_not_corrected = molfrac_or_sigmaH2
                                 percent_sigmaH2_err   = 0.06
                                 sigmaH2_err           = sigmaH2_not_corrected*percent_sigmaH2_err
-
+                        
+                        # Equation C10 in appendix of Nazareth+24
                         term1 = [(sigmaH2_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
                         term2 = [(sigmaH2_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
                         term3 = [(sigmaH2_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[u]*np.sin(oINC_rad[u]))/(np.cos(oINC_rad[u]))**2 for i in range(len(kpc_r))]
@@ -369,6 +373,7 @@ def err_sigmagas(sigmaHI_corr, sigmaH2_corr, sigmaHI_no_corr, sigmaH2_or_molfrac
         mu_err           = [err_mu*mu for i in range(len(kpc_r))]
         mu_prime_err     = [err_mu_prime*mu_prime for i in range(len(kpc_r))]
 
+        # Equation C12 in appendix of Nazareth+24
         term1            = [(sigmaHI_err[i]*(3*mu/(4-mu))) for i in range(len(kpc_r))]
         term2            = [(sigmaHI_no_corr.iloc[i]*(12*mu_err[i]/(4-mu)**2)) for i in range(len(kpc_r))]
         term3            = [(sigmaH2_err[i]*(mu_prime/(4-mu_prime))) for i in range(len(kpc_r))]
@@ -389,7 +394,8 @@ def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_er
                 u = -2
         else:
                 u = -1
-
+        
+        # Equation C10 in appendix of Nazareth+24
         term1            = [(sigmaSFR_err.iloc[i]*np.cos(nINC_rad))/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
         term2            = [(sigmaSFR_not_corrected.iloc[i]*np.sin(nINC_rad)*err_nINC_rad)/np.cos(oINC_rad[u]) for i in range(len(kpc_r))]
         term3            = [(sigmaSFR_not_corrected.iloc[i]*np.cos(nINC_rad)*err_oINC_rad[u]*np.sin(oINC_rad[u]))/(np.cos(oINC_rad[u]))**2 for i in range(len(kpc_r))]
@@ -401,6 +407,7 @@ def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_er
 # error in sigma_tot
 def err_sigmatot(sigmatot_corrected, sigmatot_not_corrected, percent_sigmatot_err):
         
+        # Equation C13 in appendix of Nazareth+24
         if galaxy_name == 'm33': # does not use percent_sigmatot_error
                 # use formula from Kam+15/17 for error propagation
                 gamma     = 0.52*g_Msun/((cm_pc)**2) # converting to cgs units
