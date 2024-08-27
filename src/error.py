@@ -176,10 +176,8 @@ err_interpolated_df_astro_units_kpc = err_interpolated_df_astro_units_kpc[~(nan_
 # difference in length between model_f and interpolated_df
 if len(interpolated_df_astro_units_kpc.iloc[:,0]) != len(model_f[0]):
         if len(interpolated_df_astro_units_kpc.iloc[:,0]) > len(model_f[0]):
-        #        print('interpolated_df.iloc[:,0])>len(model_f[0] (if case)')
                 interpolated_df_astro_units_kpc = interpolated_df_astro_units_kpc.iloc[:len(model_f[0]), :]
         else:
-        #        print('interpolated_df.iloc[:,0])<len(model_f[0] (else case)')
                 for i in range(len(model_f)):
                       # Initialize an empty list to store the modified elements
                         new_model_f = []
@@ -313,7 +311,7 @@ def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, 
                 # set err_sigmaH2 to 0
                 err_sigmaH2 = [0 for i in range(len(kpc_r))]
         else: # molecular gas is included
-                if galaxy_name == 'm31':
+                if galaxy_name == 'm31': # sigma_H2 error is calculated using molfrac data
                         molfrac         = molfrac_or_sigmaH2
                         # error in molfrac due to uncertainty in inclination, distance and molfrac data
                         molfrac_err_tot = [np.sqrt(((molfrac[i]*np.sin(nINC_rad)*err_nINC_rad)/(np.cos(oINC_rad[-1])))**2 + 
@@ -325,12 +323,12 @@ def err_sigmaH2(sigmaHI_not_corrected, molfrac_or_sigmaH2, percent_sigmaHI_err, 
                         term2       = [(sigmaHI_not_corrected.iloc[i]*molfrac_err_tot[i])/((1-molfrac.iloc[i])**2) for i in range(len(kpc_r))]                        
                         err_sigmaH2 = [np.sqrt(term1[i]**2 + term2[i]**2) for i in range(len(kpc_r))] 
                 else:
-                        if galaxy_name == 'm33':
+                        if galaxy_name == 'm33': # there is data for sigma_H2 error
                                 u = 3 # extra column due to Koch data
                                 sigmaH2_not_corrected = molfrac_or_sigmaH2
                                 sigmaH2_err           = err_interpolated_df_cgs['error sigma_H2']
 
-                        else:
+                        else: # M51 & NGC 6946: no data for sigma_H2 error, assume 6% error 
                                 u = 2
                                 sigmaH2_not_corrected = molfrac_or_sigmaH2
                                 percent_sigmaH2_err   = 0.06
@@ -362,19 +360,18 @@ def err_sigmagas(sigmaHI_corr, sigmaH2_corr, sigmaHI_no_corr, sigmaH2_or_molfrac
 
         # if moldat is included, sigma_gas equation is modified
         if switch['incl_moldat'] == 'Yes':
-                sigmagas_corr  = (3*mu/(4-mu))*sigmaHI_corr + (mu/(4-mu))*sigmaH2_corr #columns_as_arrays[2]+columns_as_arrays[3]
+                sigmagas_corr  = (3*mu/(4-mu))*sigmaHI_corr + (mu_prime/(4-mu_prime))*sigmaH2_corr #columns_as_arrays[2]+columns_as_arrays[3]
                 if galaxy_name == 'm31':
                         sigmaH2_no_corr = sigmaHI_no_corr*(molfrac_no_corr/(1-molfrac_no_corr))
         else:
                 sigmagas_corr  = sigmaHI_corr
 
-        mu_err       = [err_mu*mu for i in range(len(kpc_r))]
-        mu_prime_err = [err_mu_prime*mu_prime for i in range(len(kpc_r))]
+        mu_err           = [err_mu*mu for i in range(len(kpc_r))]
+        mu_prime_err     = [err_mu_prime*mu_prime for i in range(len(kpc_r))]
 
         term1            = [(sigmaHI_err[i]*(3*mu/(4-mu))) for i in range(len(kpc_r))]
         term2            = [(sigmaHI_no_corr.iloc[i]*(12*mu_err[i]/(4-mu)**2)) for i in range(len(kpc_r))]
         term3            = [(sigmaH2_err[i]*(mu_prime/(4-mu_prime))) for i in range(len(kpc_r))]
-        
         if switch['incl_moldat'] == 'Yes':
                 term4            = [(sigmaH2_no_corr.iloc[i]*(4*mu_prime_err[i]/(4-mu_prime)**2)) for i in range(len(kpc_r))]
         else:
@@ -385,7 +382,7 @@ def err_sigmagas(sigmaHI_corr, sigmaH2_corr, sigmaHI_no_corr, sigmaH2_or_molfrac
         return rel_err_sigmagas
 
 # error in sigma_SFR
-def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_err):
+def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_err): # arbitrarily assuming 10% error in sigma_SFR
         
         sigmaSFR_err   = sigmaSFR_not_corrected*percent_sigmaSFR_err
         if galaxy_name == 'm31':
@@ -404,7 +401,8 @@ def err_sigmaSFR(sigmaSFR_corrected, sigmaSFR_not_corrected, percent_sigmaSFR_er
 # error in sigma_tot
 def err_sigmatot(sigmatot_corrected, sigmatot_not_corrected, percent_sigmatot_err):
         
-        if galaxy_name == 'm33':
+        if galaxy_name == 'm33': # does not use percent_sigmatot_error
+                # use formula from Kam+15/17 for error propagation
                 gamma     = 0.52*g_Msun/((cm_pc)**2) # converting to cgs units
                 err_gamma = 0.1*g_Msun/((cm_pc)**2)  # converting to cgs units
 
@@ -460,27 +458,22 @@ for hreg in hregs:
         r = kpc_r.size
 
         # calculate relative error in omega
-        if galaxy_name        == 'm31':
-                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])
-        elif galaxy_name      == 'm33':
-                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])
-        else:
-                rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])     
-        
+        rel_err_omega = err_omega(interpolated_df_cgs_kpc['\Omega'],vcirc_reverted_cgs,err_interpolated_df_cgs['error vcirc kms'])
+
         # calculate relative error in sigma_tot
-        if galaxy_name           == 'm33':
-                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot_up52'],sigmatot_reverted_cgs,0.1)
-        else:
-                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot'],sigmatot_reverted_cgs,0.1)
+        if galaxy_name           == 'm33': # Kam+15/17 prescription
+                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot_up52'],sigmatot_reverted_cgs, None)
+        else: # 10% error in sigma_tot
+                rel_err_sigmatot = err_sigmatot(interpolated_df_cgs_kpc['sigma_tot']     ,sigmatot_reverted_cgs, 0.1)
         
         # calculate relative error in sigma_gas
         if galaxy_name           == 'm31':
-                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI_claude'],interpolated_df_cgs_kpc['sigma_H2'],sigmaHI_reverted_cgs,molfrac_reverted_cgs,0.1,0.1)
+                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI_claude'],interpolated_df_cgs_kpc['sigma_H2'], sigmaHI_reverted_cgs, molfrac_reverted_cgs, 0.1, 0.1)
         else:
-                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI'],interpolated_df_cgs_kpc['sigma_H2'],sigmaHI_reverted_cgs,sigmaH2_reverted_cgs,0.1,0.1)
+                rel_err_sigmagas = err_sigmagas(interpolated_df_cgs_kpc['sigma_HI'],       interpolated_df_cgs_kpc['sigma_H2'], sigmaHI_reverted_cgs, sigmaH2_reverted_cgs, 0.1, 0.1)
         
         # calculate relative error in sigma_SFR
-        rel_err_sigmasfr    = err_sigmaSFR(interpolated_df_cgs_kpc['sigma_sfr'],sigmaSFR_reverted_cgs,0.1)
+        rel_err_sigmasfr    = err_sigmaSFR(interpolated_df_cgs_kpc['sigma_sfr'], sigmaSFR_reverted_cgs, 0.1)
         
         # calculate relative error in T and q
         rel_err_T, rel_err_q = err_T_q(interpolated_df_cgs_kpc['T'],interpolated_df_cgs_kpc['q'])
