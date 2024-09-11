@@ -93,7 +93,7 @@ os.chdir(os.path.join(base_path,'data'))
 
 r = kpc_r.size  # common radius of the interpolated data
 
-#to apply kennicut-schmidt relation
+# to apply kennicut-schmidt relation
 ks_exp   = params['ks_exp']
 ks_const = (data.iloc[:, -2]/(data['\sigma_gas'])**(ks_exp)).mean()
 
