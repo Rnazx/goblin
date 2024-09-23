@@ -14,9 +14,10 @@ from scipy.interpolate import griddata
 import sys
 from datetime import date
 import csv 
-# from model_predictions import u_data_choose
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 import matplotlib.patches as patches
+import pandas as pd
+from icecream import ic
 
 today = date.today() # to set the date for the folder name
 
@@ -118,6 +119,8 @@ G_scal_Bbarord = np.sqrt(bani_f**2 + Bbar_f**2)
 G_scal_Bbartot_err = np.sqrt((biso_err*biso_f )**2+ (bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbartot
 G_scal_Bbarreg_err = Bbar_err
 G_scal_Bbarord_err = np.sqrt((bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbarord
+
+############################################################################################################################
 
 # set the plot parameters
 m                 = 9 #marker size
@@ -352,10 +355,31 @@ ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
 
 # converting from cgs units
-u     = u_f/cm_km
-cs    = cs_f/cm_km
-sig   = (np.sqrt(u_f**2 + (cs_f)**2))/cm_km
-dat_u = dat_u/cm_km
+u         = u_f/cm_km
+cs        = cs_f/cm_km # speed of diffuse component, common to both switch ON and OFF of moldata
+ic(cs[0])
+sig       = (np.sqrt(u_f**2 + (cs_f)**2))/cm_km
+dat_u     = dat_u/cm_km
+
+# to consider cs in molecular gas if moldata is included
+# define weighted average of cs
+if switch['incl_moldat'] == 'Yes':
+    cs_moldat = cs/10 # in km/s
+
+    # obtain sigma_HI and sigma_H2 from interpolated_data files
+    os.chdir(os.path.join(base_path,'data'))
+
+    # open the file data_interpolated_galaxyname.csv and take columns named sigma_HI and sigma_H2
+    df_obs  = pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))
+    if galaxy_name == 'm31':
+        sigma_HI  = np.array(df_obs['sigma_HI_claude'])
+    else: 
+        sigma_HI  = np.array(df_obs['sigma_HI'])
+    sigma_H2      = np.array(df_obs['sigma_H2'])
+    sigma_gas     = (3*params['mu']/(4-params['mu']))*sigma_HI+ (params['mu_prime']/(4-params['mu_prime']))*sigma_H2 
+    ic(sigma_gas[0])
+    cs = np.sqrt(((sigma_H2*(cs_moldat**2) + sigma_HI*(cs**2)))/sigma_gas) # in km/s
+    ic(cs[0])
 
 # legend details for sound speed and velocity dispersion data
 if galaxy_name == 'm31':
@@ -412,7 +436,7 @@ try:
 except NameError:
     pass
 
-err_cs = cs_err/cm_km
+err_cs         = cs_err/cm_km
 percent_err_cs = (err_cs/cs)*100
 try:
     fill_error(ax, kpc_r, cs, err_cs, 'g', 0.2)
@@ -453,8 +477,8 @@ if switch['incl_moldat'] == 'Yes':
             ax.set_ylim(bottom=0)
             ax.yaxis.set_ticks(np.arange(0,max(dat_u)+2,4))
         else:
-            ax.set_ylim(bottom=5)
-            ax.yaxis.set_ticks(np.arange(5,max(sig+sig_err)+8,5))
+            ax.set_ylim(bottom=0)
+            ax.yaxis.set_ticks(np.arange(0,max(sig+sig_err)+8,5))
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(0.6, 1),prop={
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
     else:
