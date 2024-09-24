@@ -232,7 +232,7 @@ l = l_f/cm_kpc #in kpc
 if galaxy_name == 'ngc6946':
     # defining data from Patra+20 for NGC 6946
     h_NGC6946_Patra_kpc = (38.9 + 23.9*kpc_r)/1000 #in kpc
-    ax.plot(kpc_r, h_NGC6946_Patra_kpc, linestyle=':', linewidth=lw, label=r' Patra et al. (2020)')
+    ax.plot(kpc_r, h_NGC6946_Patra_kpc, linestyle=':', linewidth=lw, label=r' Patra (2020)')
 elif galaxy_name == 'm33':
     # defining the data from Braun+91 for M31
     h_M31_Braun_kpc = (187 + 16*kpc_r)/1000 #in kpc
@@ -250,7 +250,7 @@ r_25_kpc_paper2       = [r*dist_Mpc_paper2[i]*1000/(arcmin_deg*deg_rad) for i,r 
 if galaxy_name == 'm31':
     # plotting model output
     ax.plot(kpc_r, h, c='b', marker='o', markersize=4, mfc='k',mec='k',linestyle='-', linewidth=lw, label=r' Scale height')
-    ax.plot(kpc_r, l, c='g',marker='o', markersize=4, mfc='k',mec='k', linestyle='-', linewidth=4, label=r' Turbulent correlation length')
+    ax.plot(kpc_r, l, c='g', marker='o', markersize=4, mfc='k',mec='k', linestyle='-', linewidth=4, label=r' Turbulent correlation length')
 
     # MW scaling with exponental relation from C16
     h_scaled = 0.18*np.exp(kpc_r/((10/16)*r_25_kpc_paper2[0])) # in kpc
@@ -357,7 +357,6 @@ ax.yaxis.set_ticks_position('both')
 # converting from cgs units
 u         = u_f/cm_km
 cs        = cs_f/cm_km # speed of diffuse component, common to both switch ON and OFF of moldata
-ic(cs[0])
 sig       = (np.sqrt(u_f**2 + (cs_f)**2))/cm_km
 dat_u     = dat_u/cm_km
 
@@ -377,9 +376,7 @@ if switch['incl_moldat'] == 'Yes':
         sigma_HI  = np.array(df_obs['sigma_HI'])
     sigma_H2      = np.array(df_obs['sigma_H2'])
     sigma_gas     = (3*params['mu']/(4-params['mu']))*sigma_HI+ (params['mu_prime']/(4-params['mu_prime']))*sigma_H2 
-    ic(sigma_gas[0])
     cs = np.sqrt(((sigma_H2*(cs_moldat**2) + sigma_HI*(cs**2)))/sigma_gas) # in km/s
-    ic(cs[0])
 
 # legend details for sound speed and velocity dispersion data
 if galaxy_name == 'm31':
