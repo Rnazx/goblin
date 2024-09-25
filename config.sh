@@ -8,6 +8,6 @@ export MY_PATH=$(pwd)
 # printf "You have selected $galname \n" 
 
 #this makes it case insensitive
-galaxy=m33
+galaxy=m31
 export galaxy_name=${galaxy,,}
 
