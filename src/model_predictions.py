@@ -70,8 +70,18 @@ with open('turb_exp.pickle', 'rb') as f:
 with open('mag_exp.pickle', 'rb') as f:
     biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc = pickle.load(f)
 
+
+os.chdir(os.path.join(base_path,'data'))
+data  = (pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))) 
+
 os.chdir(current_directory)
 cs_f     = exp_analytical_data(cs, data_pass).astype(np.float64)
+
+if switch['incl_moldat'] == 'Yes':
+    S_g = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
+    cs_f = np.asarray(np.sqrt((data.iloc[:, 2]*(cs_f)**2 + data.iloc[:, 3]*(cs_f/10)**2)/S_g))
+
+
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
 vdisp    = vdisp_df["v disp"].values # in cgs units
 
