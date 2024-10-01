@@ -58,8 +58,8 @@ u   = Symbol('u')
 tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
-
-cs = (gamma*boltz*T/(mu*mh))**Rational(1/2)
+cs = Symbol('c_S')
+cs_exp = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 
 Beq  = bet*u*(4*pi*rho)**Rational(1/2)
 biso = (Beq*(xio**(1/2)))/Max(1,u/(A*cs))
@@ -87,7 +87,7 @@ tanpB = tanpB.subs([(tau, tau), (l, l)])
 tanpB = simplify(tanpB)
 tanpb = 1/(1+q*omega*tau)
 
-mag_expr = biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc
+mag_expr = biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs_exp, Dk, Dc
 
 with open('mag_exp.pickle', 'wb') as f:
     pickle.dump(mag_expr, f)

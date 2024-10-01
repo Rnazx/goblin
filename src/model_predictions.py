@@ -68,15 +68,15 @@ with open('turb_exp.pickle', 'rb') as f:
     hg,h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
 
 with open('mag_exp.pickle', 'rb') as f:
-    biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs, Dk, Dc = pickle.load(f)
+    biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs_exp, Dk, Dc = pickle.load(f)
+
 
 
 os.chdir(os.path.join(base_path,'data'))
 data  = (pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))) 
 
 os.chdir(current_directory)
-cs_f     = exp_analytical_data(cs, data_pass).astype(np.float64)
-
+cs_f     = exp_analytical_data(cs_exp, np.array(data_pass))
 if switch['incl_moldat'] == 'Yes':
     S_g = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
     cs_f = np.asarray(np.sqrt((data.iloc[:, 2]*(cs_f)**2 + data.iloc[:, 3]*(cs_f/10)**2)/S_g))
@@ -85,8 +85,7 @@ if switch['incl_moldat'] == 'Yes':
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
 vdisp    = vdisp_df["v disp"].values # in cgs units
 
-
-h_init_trys = [1e+15, 1e+25, 1e+35]
+h_init_trys = [1e+15,1e+25,1e+25]
 for i,hi in enumerate(h_init_trys):
     try:
         if switch['u'] != 'datamaker':
@@ -96,24 +95,26 @@ for i,hi in enumerate(h_init_trys):
                 if __name__ == '__main__': 
                     print('Try {} for initial guess of h as {:e} cm'.format(i,np.round(hi)))
                 
-                h_f = root_finder(exp_analytical_data(hg, data_pass), hi)
+                h_f = root_finder(exp_analytical_data(hg, data_pass,cs_f), hi)
+                print(h_f)
                 
                 if __name__ == '__main__': 
                     print('Root found succesfully')
             else:
                 h_f = h_exp(kpc_r)
 
-        l_f = datamaker(l, data_pass, h_f)
+        l_f = datamaker(l, data_pass, h_f,cs_f)
+        print(l_f)
 
         # choose to use datamaker fn or actual velocity dispersion data for u_f
         if switch['u'] == 'datamaker':
-            u_f = datamaker(u, data_pass, h_f)
+            u_f = datamaker(u, data_pass, h_f,cs_f)
         else: # call the velocity dispersion data from supplemetary data folder in the data folder
             u_f = vdisp
 
 
-        taue_f = datamaker(taue, data_pass, h_f, None, None, u_f, l_f)
-        taur_f = datamaker(taur, data_pass, h_f, None, None, u_f, l_f)
+        taue_f = datamaker(taue, data_pass, h_f, None, None, u_f, l_f,cs_f)
+        taur_f = datamaker(taur, data_pass, h_f, None, None, u_f, l_f,cs_f)
         if switch['tau']=='taue':
             tau_f = taue_f 
         elif switch['tau']=='taur':
@@ -125,8 +126,8 @@ for i,hi in enumerate(h_init_trys):
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
 
-        omt = datamaker(omega, data_pass, h_f, tau_f, None, u_f, l_f)*tau_f
-        kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f, None, u_f, l_f)*(h_f/(tau_f*u_f))
+        omt = datamaker(omega, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)*tau_f
+        kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)*(h_f/(tau_f*u_f))
 
         alphak_f = []
 
@@ -138,30 +139,31 @@ for i,hi in enumerate(h_init_trys):
             else:
                 alpha_k = alphak3
             alphak_f.append(datamaker(alpha_k, [data_pass[i]], np.array(
-                [h_f[i]]), np.array([tau_f[i]]), None, u_f, l_f)[0])
+                [h_f[i]]), np.array([tau_f[i]]), None, u_f, l_f,cs_f)[0])
 
         alphak_f = np.array(alphak_f)
 
 
-        biso_f = datamaker(biso, data_pass, h_f, tau_f, None, u_f, l_f)
-        bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f)
+        biso_f = datamaker(biso, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
+        bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
 
-        dkdc_f = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f)
+        dkdc_f = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
         alpham_f = alphak_f*((1/dkdc_f)-1)
 
-        Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f)
+        Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
 
-        tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f)
-        tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f)
-        mag_obs = kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
-
+        tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
+        tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
+        mag_obs = kpc_r, h_f, l_f, u_f, np.float64(cs_f), alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
+        print(mag_obs)
         os.chdir(os.path.join(base_path,'outputs'))
 
         with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'wb') as f:
             pickle.dump(mag_obs, f)
-        break
+            break
 
-    except:
+    except Exception as e:
+        print(e)
         continue
 
 else: 

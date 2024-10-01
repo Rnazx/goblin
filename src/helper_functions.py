@@ -47,7 +47,7 @@ u   = Symbol('u')
 tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
-cs  = (gamma*boltz*T/(mu*mh))**Rational(1/2)
+cs = Symbol('c_S')
 
 ###############################################################################################
 base_path = os.environ.get('MY_PATH')
@@ -107,28 +107,34 @@ def retrieve_name(var):
 ###############################################################################################################
 
 # Function which takes the expression and the data to be substituted
-def exp_analytical_data(express, data_pass):
+def exp_analytical_data(express, data_pass, cs_f = None):
     # Substitute the constants in the given expression
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
-    exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
+    if cs_f is None:
+        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
                    psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime: mu_prime, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, mu_prime, a in data_pass])
+    else:
+        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime: mu_prime, A:a, cs:csf}) for (sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, mu_prime, a), csf in zip(data_pass,cs_f)])
+
 
     return exp
 
 ############################################################################################################################
 
 
-def datamaker(quan, data_pass, h_f, tau_f=None, alphak_f=None,u_f=None,l_f=None):
+def datamaker(quan, data_pass, h_f, tau_f=None, alphak_f=None,u_f=None,l_f=None,cs_f= None):
     quan_val = exp_analytical_data(quan, data_pass)
     if tau_f is None: tau_f = np.ones(len(h_f))
     if l_f is None: l_f = np.ones(len(h_f))
     if u_f is None: u_f = np.ones(len(h_f))
+    if cs_f is None: cs_f = np.ones(len(h_f))
     if alphak_f is None:
-        return np.array([np.float64(quan_val[i].evalf(subs={h: hf, tau: tauf,u:uf,l:lf})) for i, (hf, tauf,uf,lf) in enumerate(zip(h_f, tau_f,u_f,l_f))])
+        return np.array([np.float64(quan_val[i].evalf(subs={h: hf, tau: tauf,u:uf,l:lf,cs:csf})) for i, (hf, tauf,uf,lf,csf) in enumerate(zip(h_f, tau_f,u_f,l_f,cs_f))])
     else:
-        Bbar_in = np.array([quan_val[i].evalf(subs={h: hf, tau: tauf, alphak: alphakf,u:uf,l:lf}) for i, (
-            hf, tauf, alphakf,uf,lf) in enumerate(zip(h_f, tau_f, alphak_f, u_f, l_f))])
+        Bbar_in = np.array([quan_val[i].evalf(subs={h: hf, tau: tauf, alphak: alphakf,u:uf,l:lf,cs:csf}) for i, (
+            hf, tauf, alphakf,uf,lf,csf) in enumerate(zip(h_f, tau_f, alphak_f, u_f, l_f,cs_f))])
         # print(Bbar_in)
         return np.float64(Bbar_in*(np.float64(Bbar_in*Bbar_in > 0)))
 
