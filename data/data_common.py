@@ -9,11 +9,13 @@ import numpy as np
 import pandas as pd
 import os
 from data_helpers import *
+from scipy.stats import linregress # for KS plots
+import matplotlib.pyplot as plt
 # from helper_functions import parameter_read
 
 current_directory = str(os.getcwd())
 
-#converting from 2nd unit to 1st
+# converting from 2nd unit to 1st
 pc_kpc     = 1e3       # number of pc in one kpc
 cm_km      = 1e5       # number of cm in one km
 s_day      = 24*3600   # number of seconds in one day
@@ -104,11 +106,6 @@ raw_data = vcirc_to_qomega(raw_data)
 # Obtain dataframe containing all radii
 radii_df = keep_substring_columns(raw_data, 'r ')[0]
 
-# Find the column with the maximum number of NaN values
-# OG
-# coarsest_radii_mask = radii_df.isnull().sum().idxmax()
-# print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data,coarsest_radii_mask)))
-
 # if mol data isn't included in the calculation, 
 # drop sigma_H2 before selecting coarsest data
 if switch['incl_moldat'] == 'No':
@@ -128,9 +125,6 @@ else:
 
     if __name__ == '__main__': 
         print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data,coarsest_radii_mask)))
-
-
-
 
 # interpolate the data 
 # calculate sigma_H2 and drop molfrac columns for M31
@@ -158,9 +152,51 @@ interpolated_df = interpolated_df*conv_factors
 
 os.chdir(os.path.join(base_path, 'data'))
 
-# customising file name so that it can be directly loaded to output comparison file
+# customising file name based on galaxy to be used directly by output comparison file
 interpolated_df.to_csv('data_interpolated_{}.csv'.format(galaxy_name), index = False)
 interpolated_df_astro_units.to_csv('data_interpolated_astro_units_{}.csv'.format(galaxy_name), index = False)
+
+print(interpolated_df_astro_units.head())
+# make a folder to save kennicut-schmidt plots
+try:
+    os.makedirs(os.path.join(base_path, 'data', 'supplementary_data', 'kennicut-schmidt'))
+except FileExistsError:
+    # Handle the case where the directory already exists
+    print(f"The directory 'kennicut-schmidt' already exists, kennicut-schmidt plots saved in it.")
+    pass
+
+os.chdir(os.path.join(base_path, 'data','supplementary_data', 'kennicut-schmidt'))
+# plot gas vs SFR surface density
+if galaxy_name == 'm31':
+    log_sigma_HI  = np.log10(interpolated_df_astro_units['sigma_HI_claude'])
+    log_sigma_gas = np.log10(interpolated_df_astro_units['sigma_HI_claude'] + interpolated_df_astro_units['sigma_H2'])
+else:
+    log_sigma_HI  = np.log10(interpolated_df_astro_units['sigma_HI'])
+    log_sigma_gas = np.log10(interpolated_df_astro_units['sigma_HI'] + interpolated_df_astro_units['sigma_H2'])
+
+log_sigma_H2  = np.log10(interpolated_df_astro_units['sigma_H2'])
+log_sigma_SFR = np.log10(interpolated_df_astro_units['sigma_sfr'])
+
+plt.plot(log_sigma_HI,  log_sigma_SFR, 'g', marker = 'P', linestyle = ' ', label = 'HI')
+plt.plot(log_sigma_H2,  log_sigma_SFR, 'r', marker = 'P', linestyle = ' ', label = r'$\mathrm{H_2}$')
+plt.plot(log_sigma_gas, log_sigma_SFR, 'b', marker = 'P', linestyle = ' ', label = r'HI + $\mathrm{H_2}$')
+
+# perform linear fit to each plot
+slope_HI, intercept_HI, r_value_HI, p_value_HI, std_err_HI      = linregress(log_sigma_HI, log_sigma_SFR)
+slope_H2, intercept_H2, r_value_H2, p_value_H2, std_err_H2      = linregress(log_sigma_H2, log_sigma_SFR)
+slope_gas, intercept_gas, r_value_gas, p_value_gas, std_err_gas = linregress(log_sigma_gas, log_sigma_SFR)
+
+plt.plot(log_sigma_HI, slope_HI*log_sigma_HI +    intercept_HI, 'g--',  label = 'HI fit: slope = {:.2f}'.format(slope_HI))
+plt.plot(log_sigma_H2, slope_H2*log_sigma_H2 +    intercept_H2, 'r--',  label = r'$\mathrm{H_2}$' + ' fit: slope = {:.2f}'.format(slope_H2))
+plt.plot(log_sigma_gas, slope_gas*log_sigma_gas + intercept_gas, 'b--', label = 'HI + ' + r'$\mathrm{H_2}$' + ' fit: slope = {:.2f}'.format(slope_gas))
+
+plt.xlabel(r'$\log(\Sigma_{\rm gas})$')
+plt.ylabel(r'$\log(\Sigma_{\rm SFR})$')
+plt.title('Kennicutt-Schmidt relation for {}'.format(galaxy_name.upper()))
+plt.legend()
+
+plt.savefig('kennicut-schmidt_{}.png'.format(galaxy_name))
+plt.close()
 
 if __name__ == '__main__': 
     print('#####  Data interpolation done #####')

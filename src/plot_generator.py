@@ -14,9 +14,10 @@ from scipy.interpolate import griddata
 import sys
 from datetime import date
 import csv 
-# from model_predictions import u_data_choose
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 import matplotlib.patches as patches
+import pandas as pd
+from icecream import ic
 
 today = date.today() # to set the date for the folder name
 
@@ -119,6 +120,8 @@ G_scal_Bbartot_err = np.sqrt((biso_err*biso_f )**2+ (bani_err*bani_f)**2 + (Bbar
 G_scal_Bbarreg_err = Bbar_err
 G_scal_Bbarord_err = np.sqrt((bani_err*bani_f)**2 + (Bbar_err*Bbar_f)**2)/G_scal_Bbarord
 
+############################################################################################################################
+
 # set the plot parameters
 m                 = 9 #marker size
 lw                = 3
@@ -179,14 +182,6 @@ def axis_pars(ax):
 save_files_dir_err = os.path.join(base_path,'data','supplementary_data',galaxy_name)
 os.chdir(save_files_dir_err)
 
-# define file names for error when datamaker or velocity dispersion being used for the turbulent velocity
-# if switch['u'] == 'datamaker':
-#     filename = r'\{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-#                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
-# else:
-#     filename = r'\u_data_{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-#                                     params[r'C_\alpha'],params[r'\beta'],params['A'])
-
 filename = r'{}_quant_err_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
                 params[r'C_\alpha'],params[r'\beta'],params['A'])
 
@@ -201,13 +196,6 @@ with open(os.path.join(save_files_dir_err,filename), 'w', newline = '') as csvfi
     csvwriter.writerow(column_names)
     csvwriter.writerows(rel_err_transpose)
 
-# # define folder names for outputs when datamaker or velocity dispersion being used for the turbulent velocity
-# if switch['u'] == 'datamaker':
-#     save_files_dir = current_directory+r'\{},moldat_{},{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],switch['tau'],params[r'\zeta'],params[r'\psi'],
-#                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
-# else:
-#     save_files_dir = current_directory+r'\u_data_{},moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
-#                                 params[r'C_\alpha'],params[r'\beta'],params['A'])
 switches_info = r'{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(str(today),
                                                                                           switch['incl_moldat'],switch['tau'],
                                                                                           switch['force_kennicut_scmidt'][0],switch['u'],
@@ -244,7 +232,7 @@ l = l_f/cm_kpc #in kpc
 if galaxy_name == 'ngc6946':
     # defining data from Patra+20 for NGC 6946
     h_NGC6946_Patra_kpc = (38.9 + 23.9*kpc_r)/1000 #in kpc
-    ax.plot(kpc_r, h_NGC6946_Patra_kpc, linestyle=':', linewidth=lw, label=r' Patra et al. (2020)')
+    ax.plot(kpc_r, h_NGC6946_Patra_kpc, linestyle=':', linewidth=lw, label=r' Patra (2020)')
 elif galaxy_name == 'm33':
     # defining the data from Braun+91 for M31
     h_M31_Braun_kpc = (187 + 16*kpc_r)/1000 #in kpc
@@ -262,7 +250,7 @@ r_25_kpc_paper2       = [r*dist_Mpc_paper2[i]*1000/(arcmin_deg*deg_rad) for i,r 
 if galaxy_name == 'm31':
     # plotting model output
     ax.plot(kpc_r, h, c='b', marker='o', markersize=4, mfc='k',mec='k',linestyle='-', linewidth=lw, label=r' Scale height')
-    ax.plot(kpc_r, l, c='g',marker='o', markersize=4, mfc='k',mec='k', linestyle='-', linewidth=4, label=r' Turbulent correlation length')
+    ax.plot(kpc_r, l, c='g', marker='o', markersize=4, mfc='k',mec='k', linestyle='-', linewidth=4, label=r' Turbulent correlation length')
 
     # MW scaling with exponental relation from C16
     h_scaled = 0.18*np.exp(kpc_r/((10/16)*r_25_kpc_paper2[0])) # in kpc
@@ -331,12 +319,16 @@ try:
 except NameError:
     pass
 
-if galaxy_name == 'ngc6946':
-    ax.set_ylim(bottom = 0)
-    ax.yaxis.set_ticks(np.arange(0,2,0.2)) # for kpc data
+# log scale if moldata is included
+if switch['incl_moldat'] == 'Yes':
+    ax.set_yscale('log')
 else:
-    ax.set_ylim(bottom = 0)
-    ax.yaxis.set_ticks(np.arange(0,max(h_err_corr_units+h)+0.1,0.2)) # for kpc data
+    if galaxy_name == 'ngc6946':
+        ax.set_ylim(bottom = 0)
+        ax.yaxis.set_ticks(np.arange(0,2,0.2)) # for kpc data
+    else:
+        ax.set_ylim(bottom = 0)
+        ax.yaxis.set_ticks(np.arange(0,max(h_err_corr_units+h)+0.1,0.2)) # for kpc data
 
 ax.set_xlabel(r'Radius (kpc)', fontsize   = fs)
 ax.set_ylabel(r'$h$, $l$ (kpc)', fontsize = fs)
@@ -363,10 +355,28 @@ ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
 
 # converting from cgs units
-u     = u_f/cm_km
-cs    = cs_f/cm_km
-sig   = (np.sqrt(u_f**2 + (cs_f)**2))/cm_km
-dat_u = dat_u/cm_km
+u         = u_f/cm_km
+cs        = cs_f/cm_km # speed of diffuse component, common to both switch ON and OFF of moldata
+sig       = (np.sqrt(u_f**2 + (cs_f)**2))/cm_km
+dat_u     = dat_u/cm_km
+
+# to consider cs in molecular gas if moldata is included
+# define weighted average of cs
+# if switch['incl_moldat'] == 'Yes':
+#     cs_moldat = cs/10 # in km/s
+
+#     # obtain sigma_HI and sigma_H2 from interpolated_data files
+#     os.chdir(os.path.join(base_path,'data'))
+
+#     # open the file data_interpolated_galaxyname.csv and take columns named sigma_HI and sigma_H2
+#     df_obs  = pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))
+#     if galaxy_name == 'm31':
+#         sigma_HI  = np.array(df_obs['sigma_HI_claude'])
+#     else: 
+#         sigma_HI  = np.array(df_obs['sigma_HI'])
+#     sigma_H2      = np.array(df_obs['sigma_H2'])
+#     sigma_gas     = (3*params['mu']/(4-params['mu']))*sigma_HI+ (params['mu_prime']/(4-params['mu_prime']))*sigma_H2 
+#     cs = np.sqrt(((sigma_H2*(cs_moldat**2) + sigma_HI*(cs**2)))/sigma_gas) # in km/s
 
 # legend details for sound speed and velocity dispersion data
 if galaxy_name == 'm31':
@@ -423,7 +433,7 @@ try:
 except NameError:
     pass
 
-err_cs = cs_err/cm_km
+err_cs         = cs_err/cm_km
 percent_err_cs = (err_cs/cs)*100
 try:
     fill_error(ax, kpc_r, cs, err_cs, 'g', 0.2)
@@ -440,36 +450,71 @@ percent_err_sig = (sig_err/sig)*100
 
 # legend specs
 axis_pars(ax)
-if galaxy_name == 'm31':
-    ax.set_ylim(bottom=4)
-    ax.yaxis.set_ticks(np.arange(4,max(dat_u)+16,4))
-    ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1, 1),prop={
-            'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
-elif galaxy_name == 'm33':
-    ax.set_ylim(bottom=2)
-    ax.yaxis.set_ticks(np.arange(2,max(dat_u)+4,2))
-    ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
-            'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
-elif galaxy_name == 'm51':
-    if params['\zeta'] == 10 and params['\psi'] == 1:
-        ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(6,max(dat_u)+3,2))
-    elif params['\zeta'] == 10 and params['\psi'] == 1.5:
-        ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(6,max(sig+sig_err)+3,4))
-    elif params['\zeta'] == 15 and params['\psi'] == 1:
-        ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(5,max(sig+sig_err)+2,4))
+# log scale if moldata is included
+if switch['incl_moldat'] == 'Yes':
+    # ax.set_yscale('log')
+    if galaxy_name == 'm31':
+        ax.set_ylim(bottom=4)
+        ax.yaxis.set_ticks(np.arange(4,max(sig+sig_err)+16,4))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    elif galaxy_name == 'm33':
+        ax.set_ylim(bottom=2)
+        ax.yaxis.set_ticks(np.arange(2,max(sig+sig_err)+4,2))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    elif galaxy_name == 'm51':
+        if params['\zeta'] == 10 and params['\psi'] == 1:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(6,max(sig+sig_err)+3,2))
+        elif params['\zeta'] == 10 and params['\psi'] == 1.5:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(6,max(sig+sig_err)+3,4))
+        elif params['\zeta'] == 15 and params['\psi'] == 1:
+            ax.set_ylim(bottom=0)
+            ax.yaxis.set_ticks(np.arange(0,max(dat_u)+2,4))
+        else:
+            ax.set_ylim(bottom=0)
+            ax.yaxis.set_ticks(np.arange(0,max(sig+sig_err)+8,5))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(0.6, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
     else:
         ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(6,max(dat_u)+8,2))
-    ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
-            'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+        ax.yaxis.set_ticks(np.arange(0,max(sig+sig_err)+8,4))#changed from 5 to 0
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+
 else:
-    ax.set_ylim(bottom=6)
-    ax.yaxis.set_ticks(np.arange(5,max(sig)+8,4))
-    ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
-            'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    if galaxy_name == 'm31':
+        ax.set_ylim(bottom=4)
+        ax.yaxis.set_ticks(np.arange(4,max(dat_u)+16,4))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    elif galaxy_name == 'm33':
+        ax.set_ylim(bottom=2)
+        ax.yaxis.set_ticks(np.arange(2,max(dat_u)+4,2))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    elif galaxy_name == 'm51':
+        if params['\zeta'] == 10 and params['\psi'] == 1:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(6,max(dat_u)+3,2))
+        elif params['\zeta'] == 10 and params['\psi'] == 1.5:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(6,max(sig+sig_err)+3,4))
+        elif params['\zeta'] == 15 and params['\psi'] == 1:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(5,max(sig+sig_err)+2,4))
+        else:
+            ax.set_ylim(bottom=6)
+            ax.yaxis.set_ticks(np.arange(6,max(dat_u)+8,2))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    else:
+        ax.set_ylim(bottom=6)
+        ax.yaxis.set_ticks(np.arange(5,max(sig)+8,4))
+        ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
+                'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 
 ax.set_xlabel(r'Radius (kpc)', fontsize=fs)
 ax.set_ylabel(r'Speed (km s$^{-1}$)',  fontsize=fs)
@@ -558,9 +603,15 @@ percent_err_Bord = (G_scal_Bbarord_err/G_scal_Bbarord)*100
 
 ax.set_xlabel(r'Radius (kpc)', fontsize = fs)
 
-ax.set_ylim(bottom=0)
-ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,5))
+# log scale if moldata is included
+if switch['incl_moldat'] == 'Yes':
+    ax.set_yscale('log')
+else:
+    ax.set_ylim(bottom=0)
+    ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,5))
 
+# ax.set_ylim(bottom=0)
+# ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,10))
 ax.xaxis.set_major_formatter(FormatStrFormatter('%g'))
 ax.set_ylabel('Magnetic field strength ($\mathrm{\mu G}$)', fontsize=fs)
 
