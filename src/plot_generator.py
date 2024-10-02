@@ -226,7 +226,8 @@ ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
 
 h = h_f/cm_kpc #in kpc
-l = l_f/cm_kpc #in kpc
+l = l_f/(cm_kpc)**2 #in kpc
+# l = l_f/cm_kpc #in kpc
 
 # defining h data
 if galaxy_name == 'ngc6946':

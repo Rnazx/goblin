@@ -67,7 +67,8 @@ u   = Symbol('u')
 tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
-cs = Symbol('c_S')
+cs  = Symbol('c_S')
+
 cs_exp = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 
 galaxy_name       = os.environ.get('galaxy_name')
