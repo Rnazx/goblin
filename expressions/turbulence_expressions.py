@@ -67,7 +67,8 @@ u   = Symbol('u')
 tau = Symbol('tau')
 l   = Symbol('l')
 h   = Symbol('h')
-
+cs = Symbol('c_S')
+cs_exp = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 
 galaxy_name       = os.environ.get('galaxy_name')
 current_directory = str(os.getcwd())
@@ -100,7 +101,6 @@ switch = parameter_read(os.path.join(base_path,'inputs','switches.in'))
 ##############################################################################################################
 
 # Defining the expressions
-cs  = (gamma*boltz*T/(mu*mh))**Rational(1/2)
 rho = sigma/(2*h)
 n   = rho/(mu*mh)
 nu  = (delta*sigmasfr)/(2*h*mstar)

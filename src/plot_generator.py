@@ -362,21 +362,21 @@ dat_u     = dat_u/cm_km
 
 # to consider cs in molecular gas if moldata is included
 # define weighted average of cs
-if switch['incl_moldat'] == 'Yes':
-    cs_moldat = cs/10 # in km/s
+# if switch['incl_moldat'] == 'Yes':
+#     cs_moldat = cs/10 # in km/s
 
-    # obtain sigma_HI and sigma_H2 from interpolated_data files
-    os.chdir(os.path.join(base_path,'data'))
+#     # obtain sigma_HI and sigma_H2 from interpolated_data files
+#     os.chdir(os.path.join(base_path,'data'))
 
-    # open the file data_interpolated_galaxyname.csv and take columns named sigma_HI and sigma_H2
-    df_obs  = pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))
-    if galaxy_name == 'm31':
-        sigma_HI  = np.array(df_obs['sigma_HI_claude'])
-    else: 
-        sigma_HI  = np.array(df_obs['sigma_HI'])
-    sigma_H2      = np.array(df_obs['sigma_H2'])
-    sigma_gas     = (3*params['mu']/(4-params['mu']))*sigma_HI+ (params['mu_prime']/(4-params['mu_prime']))*sigma_H2 
-    cs = np.sqrt(((sigma_H2*(cs_moldat**2) + sigma_HI*(cs**2)))/sigma_gas) # in km/s
+#     # open the file data_interpolated_galaxyname.csv and take columns named sigma_HI and sigma_H2
+#     df_obs  = pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))
+#     if galaxy_name == 'm31':
+#         sigma_HI  = np.array(df_obs['sigma_HI_claude'])
+#     else: 
+#         sigma_HI  = np.array(df_obs['sigma_HI'])
+#     sigma_H2      = np.array(df_obs['sigma_H2'])
+#     sigma_gas     = (3*params['mu']/(4-params['mu']))*sigma_HI+ (params['mu_prime']/(4-params['mu_prime']))*sigma_H2 
+#     cs = np.sqrt(((sigma_H2*(cs_moldat**2) + sigma_HI*(cs**2)))/sigma_gas) # in km/s
 
 # legend details for sound speed and velocity dispersion data
 if galaxy_name == 'm31':
@@ -480,7 +480,7 @@ if switch['incl_moldat'] == 'Yes':
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
     else:
         ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(5,max(sig+sig_err)+8,4))
+        ax.yaxis.set_ticks(np.arange(0,max(sig+sig_err)+8,4))#changed from 5 to 0
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 
