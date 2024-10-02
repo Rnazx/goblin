@@ -96,19 +96,19 @@ for i,hi in enumerate(h_init_trys):
                     print('Try {} for initial guess of h as {:e} cm'.format(i,np.round(hi)))
                 
                 h_f = root_finder(exp_analytical_data(hg, data_pass,cs_f), hi)
-                print(h_f)
+                # print(h_f)
                 
                 if __name__ == '__main__': 
                     print('Root found succesfully')
             else:
                 h_f = h_exp(kpc_r)
 
-        l_f = datamaker(l, data_pass, h_f,cs_f)
-        print(l_f)
+        l_f = datamaker(l, data_pass, h_f,None,None,None,None,cs_f)
+        # print(l_f)
 
         # choose to use datamaker fn or actual velocity dispersion data for u_f
         if switch['u'] == 'datamaker':
-            u_f = datamaker(u, data_pass, h_f,cs_f)
+            u_f = datamaker(u, data_pass, h_f,None,None,None,None,cs_f)
         else: # call the velocity dispersion data from supplemetary data folder in the data folder
             u_f = vdisp
 
@@ -155,7 +155,7 @@ for i,hi in enumerate(h_init_trys):
         tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         mag_obs = kpc_r, h_f, l_f, u_f, np.float64(cs_f), alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
-        print(mag_obs)
+        # print(mag_obs)
         os.chdir(os.path.join(base_path,'outputs'))
 
         with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'wb') as f:

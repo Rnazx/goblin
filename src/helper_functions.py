@@ -130,6 +130,7 @@ def datamaker(quan, data_pass, h_f, tau_f=None, alphak_f=None,u_f=None,l_f=None,
     if l_f is None: l_f = np.ones(len(h_f))
     if u_f is None: u_f = np.ones(len(h_f))
     if cs_f is None: cs_f = np.ones(len(h_f))
+
     if alphak_f is None:
         return np.array([np.float64(quan_val[i].evalf(subs={h: hf, tau: tauf,u:uf,l:lf,cs:csf})) for i, (hf, tauf,uf,lf,csf) in enumerate(zip(h_f, tau_f,u_f,l_f,cs_f))])
     else:
