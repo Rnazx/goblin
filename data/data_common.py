@@ -156,7 +156,6 @@ os.chdir(os.path.join(base_path, 'data'))
 interpolated_df.to_csv('data_interpolated_{}.csv'.format(galaxy_name), index = False)
 interpolated_df_astro_units.to_csv('data_interpolated_astro_units_{}.csv'.format(galaxy_name), index = False)
 
-print(interpolated_df_astro_units.head())
 # make a folder to save kennicut-schmidt plots
 try:
     os.makedirs(os.path.join(base_path, 'data', 'supplementary_data', 'kennicut-schmidt'))
