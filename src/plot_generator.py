@@ -169,7 +169,7 @@ def axis_pars(ax):
     else:
         ax.set_title(r'NGC 6946', fontsize=title_textsize)
         ax.set_xlim(left=0.3, right=19)
-        ax.xaxis.set_ticks(np.arange(1, 20, 2)) 
+        ax.xaxis.set_ticks(np.arange(0, 20.5, 2)) 
 
     ax.xaxis.set_major_formatter(FormatStrFormatter('%g'))
     ax.tick_params(axis='both', which='minor',
@@ -588,7 +588,9 @@ else:
     ax.errorbar(mrange, G_dat_Breg, zorder=2, elinewidth=1, yerr=err_G_dat_Breg, mew=1, capsize=7,
                 c='r', linestyle=' ', marker='s', mfc='r', mec='k',label=r' Beck et al. (2019)',ecolor='k',markersize= 8.75)
     ax.plot(mrange, G_dat_Bord, zorder=2,c='g', linestyle=' ', marker='D',mfc='g',mec='k',mew=1,markersize = 8.75, label=r' Ehle & Beck (1993)')#, label='Average Binned data $B_{ord}$ ($\mu G$)')
-
+    ax.errorbar(kpc_Btot_Basu_Roy_ngc6946, G_dat_Btot_Basu_Roy_ngc6946, zorder=2, elinewidth=1, yerr=err_G_dat_Btot_Basu_Roy_ngc6946, mew=1, capsize=7,
+                c='b', linestyle=' ', marker='p', mfc='b', mec='k',label=r' Basu & Roy (2013)',ecolor='k',markersize= 8.75)
+    
 # plotting error
 try:
     fill_error(ax, kpc_r, G_scal_Bbartot*1e+6,G_scal_Bbartot_err*1e+6, 'b', 0.2)
@@ -609,6 +611,7 @@ if switch['incl_moldat'] == 'Yes':
 else:
     ax.set_ylim(bottom=0)
     ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,5))
+
 
 # ax.set_ylim(bottom=0)
 # ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,10))
@@ -802,7 +805,7 @@ elif galaxy_name == 'm51':
     else:
         ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+3),round(max(b),1)+1.5,0.8))
 else:
-    ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+1.1),round(max(b),1)+0.8,0.8))
+    ax.yaxis.set_ticks(np.arange(-7,11,2))
 
 ax.axhline(y=0, color='black', linestyle=':', alpha = 1)
 
@@ -987,7 +990,7 @@ elif galaxy_name == 'm51':
     ax.yaxis.set_ticks(np.arange(-10,max(gamma+err_gamma)+2,10))
 elif galaxy_name == 'ngc6946':
     ax.set_ylim(bottom=-2)
-    ax.yaxis.set_ticks(np.arange(-2,max(gamma+err_gamma)+1,4))
+    ax.yaxis.set_ticks(np.arange(-2,max(gamma+err_gamma)+1,20))
 else:
     ax.set_ylim(bottom=-6)
     ax.yaxis.set_ticks(np.arange(-6,max(gamma+err_gamma)+2,4))
