@@ -77,11 +77,11 @@ data  = (pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name)))
 
 os.chdir(current_directory)
 cs_f     = exp_analytical_data(cs_exp, np.array(data_pass))
-print(cs_f)
+
 if switch['incl_moldat'] == 'Yes':
     S_g = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
     cs_f = np.sqrt(np.array(((3*params['mu']/(4-params['mu']))*data.iloc[:, 2]*(cs_f)**2 + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]*(cs_f/10)**2)/S_g, dtype=np.float64))
-print(cs_f)
+
 
 
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
