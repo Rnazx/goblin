@@ -4,7 +4,7 @@ source config.sh
 # Put the data in a usable format
 cd data
 python data_common.py 
-python vel_disp.py
+python velocity_dispersion.py
 
 #Solve all the expressions in terms of the scale height h
 cd ../expressions

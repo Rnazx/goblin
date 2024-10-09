@@ -17,14 +17,15 @@ base_path   = os.environ.get('MY_PATH')
 
 os.chdir(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}'))
 
+# multiplication by root(3) happens in plot_generator.py
+# Boomsma+08 data (d = 6 Mpc)
 vdisp_df     = pd.read_csv(f'{galaxy_name}_veldisp.csv')
 kms_sigmaLOS = vdisp_df["v disp"].values
-kpc_radius   = vdisp_df["r"].values
+kpc_radius   = vdisp_df["r"].values*(7.72/6)
 
-# Bacchini+19 data
-# vdisp_df_b = pd.read_csv(f'{galaxy_name}_veldisp_bacchini.csv')
+# Bacchini+19 data (d = 5.52 Mpc)
 kms_sigmaLOS_b = vdisp_df["v disp_bacchini"].values
-kpc_radius_b   = vdisp_df["r_bacchini"].values
+kpc_radius_b   = vdisp_df["r_bacchini"].values*(7.72/5.52)
 #####################################################################################################################################
 
 #no pb data for ngc 6946
@@ -36,6 +37,7 @@ G_dat_Breg     = np.array([1.2,1.9])
 err_G_dat_Breg = 0.4*G_dat_Breg        # Beck+19 mentions 30-40% error in B_reg
 G_dat_Btot     = np.array([19,13])
 
+# Basu + Roy data (d = 6.8 Mpc)
 G_dat_Btot_Basu_Roy_ngc6946 = np.array([29.51143451, 19.34511435, 15.79002079, 14.91683992, 13.91891892, 13.04573805, 12.35966736, 11.92307692, 
     11.73596674, 11.73596674, 11.86070686, 11.92307692, 11.67359667, 11.36174636, 11.04989605, 10.8004158, 
     10.67567568, 10.61330561, 10.36382536, 10.23908524, 9.98960499, 9.615384615, 9.365904366, 9.116424116, 
@@ -78,7 +80,7 @@ range_po_Surgent23   = np.array([0.827361564,1.087947883,1.361563518,1.622149837
 po_Surgent23_signed  = np.array([-23.3953843,-22.6543766,-22.68057384,-15.81190658,-17.75424492,-23.90810174,-23.93429898,-24.72520618,-21.30459491,-21.33203964,-19.82632199,-18.31935685,-17.96257537,-14.92619031,-13.41922517,-10.38159263,-5.812045187,-7.370157322,-10.07720563,-13.54896389,-9.362395176,-5.558805184,-64.61487283,-9.110402661])
 po_Surgent23         = -1*po_Surgent23_signed
 
-# tentative data from Vasanth's thesis
+# tentative data from Vasanth pvt. comm.
 range_po_V = np.arange(1.5, 10, 1)
 po_V       = np.array([28.28,25.1,34.06,31.93,21.37,31.36,31.56,32.11,27.81])
 
@@ -89,10 +91,10 @@ po_V       = np.array([28.28,25.1,34.06,31.93,21.37,31.36,31.56,32.11,27.81])
 kpc_dat_r = np.array([3.01,9.02,13.02])*(7.72/7)
 pc_dat_h  = np.array([259.2,564.92,923.81])
 
-# Bacchini+19 data
+# Bacchini+19 data (d = 5.52 Mpc)
 os.chdir(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}'))
 
 h_df           = pd.read_csv(f'{galaxy_name}_h_bacchini.csv')
 h_b            = h_df["h_bacchini"].values
-kpc_radius_h_b = h_df["r_bacchini"].values
+kpc_radius_h_b = h_df["r_bacchini"].values*(7.72/5.52)
 

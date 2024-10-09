@@ -76,6 +76,9 @@ h_err, l_err, u_err, cs_err, alphak_err, tau_err, \
         taur_err, biso_err, bani_err, Bbar_err, \
                 tanpB_err, tanpb_err, dkdc_err = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
 
+# delete this file from the outputs folder
+os.remove(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out')
+
 # compare errors in sub/super-sonic regimes and save the maximum of the two
 err_quant_list = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
 
@@ -226,7 +229,7 @@ ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
 
 h = h_f/cm_kpc #in kpc
-l = l_f/(cm_kpc)**2 #in kpc
+l = l_f/cm_kpc #in kpc
 # l = l_f/cm_kpc #in kpc
 
 # defining h data
@@ -388,7 +391,7 @@ elif galaxy_name == 'm33':
     ref_data  = ' Kam et al. (2017)'
 elif galaxy_name == 'm51':
     ref_cs    = ' (Bresolin et al. 2004)'
-    ref_data  = ' Schuster et al. (2007)'
+    ref_data  = ' Hitschfeld et al. (2009)'
 else:
     ref_cs    = ' (Gusev et al. 2013)'
     ref_data  = ' Boomsma et al. (2008)' 
@@ -512,8 +515,8 @@ else:
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
     else:
-        ax.set_ylim(bottom=6)
-        ax.yaxis.set_ticks(np.arange(5,max(sig)+8,4))
+        ax.set_ylim(bottom=0)
+        ax.yaxis.set_ticks(np.arange(0,max(sig)+8,4))
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1, 1),prop={
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 
@@ -777,12 +780,12 @@ alphasat_f = alphak_f + alpham_f
 
 # plotting model outputs
 if galaxy_name == 'm31':
-    ax.plot(kpc_r, alphak_f/cm_km, linewidth=lw, color='b', marker='o',markersize=4,mfc='k',mec='k', label=r' $\mathrm{\alpha_k}$')
-    ax.plot(kpc_r, alpham_f/cm_km, linewidth=lw, color='r', marker='o',markersize=4,mfc='k',mec='k', label=r' $\mathrm{\alpha_m}$')
+    ax.plot(kpc_r, alphak_f/cm_km,   linewidth=lw, color='b', marker='o',markersize=4,mfc='k',mec='k', label=r' $\mathrm{\alpha_k}$')
+    ax.plot(kpc_r, alpham_f/cm_km,   linewidth=lw, color='r', marker='o',markersize=4,mfc='k',mec='k', label=r' $\mathrm{\alpha_m}$')
     ax.plot(kpc_r, alphasat_f/cm_km, linewidth=lw, color='g', marker='o',markersize=4,mfc='k',mec='k', label=r' $\mathrm{\alpha_{\mathrm{sat}}}$')
 else:
-    ax.plot(kpc_r, alphak_f/cm_km, linewidth=lw, color='b', marker='o',markersize=4,mfc='k',mec='k')
-    ax.plot(kpc_r, alpham_f/cm_km, linewidth=lw, color='r', marker='o',markersize=4,mfc='k',mec='k')
+    ax.plot(kpc_r, alphak_f/cm_km,   linewidth=lw, color='b', marker='o',markersize=4,mfc='k',mec='k')
+    ax.plot(kpc_r, alpham_f/cm_km,   linewidth=lw, color='r', marker='o',markersize=4,mfc='k',mec='k')
     ax.plot(kpc_r, alphasat_f/cm_km, linewidth=lw, color='g', marker='o',markersize=4,mfc='k',mec='k')
 
 # plotting errors
@@ -796,17 +799,18 @@ b                  = alphak_f/cm_km
 percent_err_alphak = (alphak_err/alphak_f)*100
 
 # manually setting y-axis limits
-if galaxy_name == 'm31':
-    ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+1.2),round(max(b),2)+0.2,0.8))
-elif galaxy_name == 'm33':
-    ax.yaxis.set_ticks(np.arange(-0.5,0.7,0.2))
-elif galaxy_name == 'm51':
-    if params['\zeta'] == 10:
-        ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+1.5),round(max(b),1)+1.5,0.8))
+if switch['incl_moldat'] == 'No':
+    if galaxy_name == 'm31':
+        ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+1.2),round(max(b),2)+0.2,0.8))
+    elif galaxy_name == 'm33':
+        ax.yaxis.set_ticks(np.arange(-0.5,0.7,0.2))
+    elif galaxy_name == 'm51':
+        if params['\zeta'] == 10:
+            ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+1.5),round(max(b),1)+1.5,0.8))
+        else:
+            ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+3),round(max(b),1)+1.5,0.8))
     else:
-        ax.yaxis.set_ticks(np.arange(-(round(min(abs(a)),1)+3),round(max(b),1)+1.5,0.8))
-else:
-    ax.yaxis.set_ticks(np.arange(-7,11,2))
+        ax.yaxis.set_ticks(np.arange(-7,11,2))
 
 ax.axhline(y=0, color='black', linestyle=':', alpha = 1)
 
@@ -973,28 +977,30 @@ axis_pars(ax)
 ax2.set_ylabel(r'$D/D_\mathrm{c}$',  fontsize=fs)
 
 # set limit of ax2 
-if galaxy_name == 'm51':
-    ax2.set_ylim(bottom = -1, top = max(dkdc_f+dkdc_err)+1)
-else:
-    ax2.set_ylim(bottom = 0, top = max(dkdc_f+dkdc_err)+1)
+if switch['incl_moldat'] == 'No':
+    if galaxy_name == 'm51':
+        ax2.set_ylim(bottom = -1, top = max(dkdc_f+dkdc_err)+1)
+    else:
+        ax2.set_ylim(bottom = 0, top = max(dkdc_f+dkdc_err)+1)
 ax.set_xlabel('Radius (kpc)', fontsize=fs)
 ax2.axhline(y=1, color='black', linestyle=':', alpha = 1)
 
 percent_error_dkdc = (dkdc_err/dkdc_f)*100
 
 # specs for y axis of gamma
-if galaxy_name == 'm33':
-    ax.set_ylim(bottom=-1.5)
-    ax.yaxis.set_ticks(np.arange(-1.5,max(gamma+err_gamma)+1,2))
-elif galaxy_name == 'm51':
-    ax.set_ylim(bottom=-10)
-    ax.yaxis.set_ticks(np.arange(-10,max(gamma+err_gamma)+2,10))
-elif galaxy_name == 'ngc6946':
-    ax.set_ylim(bottom=-2)
-    ax.yaxis.set_ticks(np.arange(-2,max(gamma+err_gamma)+1,20))
-else:
-    ax.set_ylim(bottom=-6)
-    ax.yaxis.set_ticks(np.arange(-6,max(gamma+err_gamma)+2,4))
+if switch['incl_moldat'] == 'No':
+    if galaxy_name == 'm33':
+        ax.set_ylim(bottom=-1.5)
+        ax.yaxis.set_ticks(np.arange(-1.5,max(gamma+err_gamma)+1,2))
+    elif galaxy_name == 'm51':
+        ax.set_ylim(bottom=-10)
+        ax.yaxis.set_ticks(np.arange(-10,max(gamma+err_gamma)+2,10))
+    elif galaxy_name == 'ngc6946':
+        ax.set_ylim(bottom=-2)
+        ax.yaxis.set_ticks(np.arange(-2,max(gamma+err_gamma)+1,20))
+    else:
+        ax.set_ylim(bottom=-6)
+        ax.yaxis.set_ticks(np.arange(-6,max(gamma+err_gamma)+2,4))
 
 # legend specs
 leg  = p1 + p2
