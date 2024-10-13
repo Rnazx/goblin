@@ -77,15 +77,10 @@ os.chdir(current_directory)
 cs_f     = exp_analytical_data(cs_exp, np.array(data_pass))
 print(cs_f)
 if switch['incl_moldat'] == 'Yes':
-<<<<<<< HEAD
-    S_g  = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
-    cs_f = np.sqrt(np.array(((3*params['mu']/(4-params['mu']))*data.iloc[:, 2]*(cs_f)**2 + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]*(cs_f/10)**2)/S_g, dtype=np.float64))
-=======
     S_g = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
     cs_f = np.sqrt(np.array(((3*params['mu']/(4-params['mu']))*data.iloc[:, 2]*(cs_f)**2 + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]*(cs_f/10)**2)/S_g, dtype=np.float64))
 print(cs_f)
 
->>>>>>> 04ccdfddb8233c1ffe35c2ff3fc33d43bdec4e5a
 
 # obtain 3D velocity dispersion data
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
