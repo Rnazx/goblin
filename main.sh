@@ -7,7 +7,7 @@ python data_common.py
 python velocity_dispersion.py
 
 # #Solve all the expressions in terms of the scale height h
-# cd ../expressions
+cd ../expressions
 python turbulence_expressions.py
 python magnetic_expressions.py
 
