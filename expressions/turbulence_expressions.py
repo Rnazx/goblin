@@ -61,6 +61,7 @@ bet    = Symbol('beta')
 alphak = Symbol('alpha_k')
 Gamma  = Symbol('Gamma')
 A      = Symbol('A')
+mu_prime = Symbol('Mu')
 
 # Defining the general parameters
 u   = Symbol('u')
@@ -136,9 +137,9 @@ hsup = (u**2)/(3*pi*G*(sigma + (sigmatot/zet)))
 rho  = sigma/(2*h)
 
 if switch['incl_moldat'] == 'No':
-    n = rho/((14/11)*mh)
+    n = rho/((mu)*mh)
 else:
-    n = (rho/((14/11)*mh)) + (rho/((2.4)*mh))
+    n = (rho/((mu)*mh)) + (rho/((mu_prime)*mh))
 
 taue = simplify(l/u)
 taur = simplify(6.8*s_Myr*(1/4)*(nu*cm_kpc**3*s_Myr/50)**(-1)*(E51)

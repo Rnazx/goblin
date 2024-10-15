@@ -41,6 +41,7 @@ alphak = Symbol('alpha_k')
 Gamma  = Symbol('Gamma')
 A      = Symbol('A')
 K      = Symbol('K')
+mu_prime = Symbol('Mu')
 
 # # Defining the general parameters
 # u   = Symbol('u')

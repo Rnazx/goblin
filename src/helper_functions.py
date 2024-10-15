@@ -40,6 +40,7 @@ alphak   = Symbol('alpha_k')
 Gamma    = Symbol('Gamma')
 A        = Symbol('A')
 K        = Symbol('K')
+mu_prime = Symbol('Mu')
 
 
 # Defining the general parameters
@@ -113,10 +114,10 @@ def exp_analytical_data(express, data_pass, cs_f = None):
     # Substitute the data for the observables as well as the parameters for each radii
     if cs_f is None:
         exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a in data_pass])
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a in data_pass])
     else:
         exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, K: k, mu: m, A:a, cs:csf}) for (sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, a), csf in zip(data_pass,cs_f)])
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a, cs:csf}) for (sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a), csf in zip(data_pass,cs_f)])
 
 
     return exp
