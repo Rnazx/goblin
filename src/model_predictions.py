@@ -17,7 +17,7 @@ galaxy_name = os.environ.get('galaxy_name')
 # variables introduced to customise the scale height and velocity dispersion values used in the model
 # choose to use datamaker fn or actual velocity dispersion data for u_f
 # u_data_choose = 'data' # 'data' or 'datamaker' 
-# # scale height customisation 
+# scale height customisation 
 # h_data_choose = 'root_find' # 'root_find' or 'exponential'
 
 def h_exp(kpc_r):
@@ -65,12 +65,10 @@ with open('zip_data.in', 'rb') as f:
 os.chdir(os.path.join(base_path,'expressions'))
 
 with open('turb_exp.pickle', 'rb') as f:
-    hg,h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
+    hg, h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3 = pickle.load(f)
 
 with open('mag_exp.pickle', 'rb') as f:
     biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs_exp, Dk, Dc = pickle.load(f)
-
-
 
 os.chdir(os.path.join(base_path,'data'))
 data  = (pd.read_csv('data_interpolated_{}.csv'.format(galaxy_name))) 
@@ -84,6 +82,7 @@ if switch['incl_moldat'] == 'Yes':
 
 
 
+# obtain 3D velocity dispersion data
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
 vdisp    = vdisp_df["v disp"].values # in cgs units
 
@@ -149,7 +148,7 @@ for i,hi in enumerate(h_init_trys):
         biso_f = datamaker(biso, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
 
-        dkdc_f = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
+        dkdc_f  = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
         alpham_f = alphak_f*((1/dkdc_f)-1)
 
         Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
@@ -157,7 +156,6 @@ for i,hi in enumerate(h_init_trys):
         tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         mag_obs = kpc_r, h_f, l_f, u_f, np.float64(cs_f), alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
-        # print(mag_obs)
         os.chdir(os.path.join(base_path,'outputs'))
 
         with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'wb') as f:

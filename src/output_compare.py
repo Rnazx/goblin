@@ -4,7 +4,6 @@ import numpy as np
 import pickle
 import os
 import pandas as pd
-# from helper_functions import parameter_read
 from data_helpers import *
 from datetime import date
 import csv # for saving err data as csv file
