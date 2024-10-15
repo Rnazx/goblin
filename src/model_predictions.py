@@ -106,7 +106,7 @@ for i,hi in enumerate(h_init_trys):
                 h_f = h_exp(kpc_r)
 
         l_f = datamaker(l, data_pass, h_f,None,None,None,None,cs_f)
-        # print(l_f)
+        print(l_f)
 
         # choose to use datamaker fn or actual velocity dispersion data for u_f
         if switch['u'] == 'datamaker':

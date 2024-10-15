@@ -104,7 +104,7 @@ if ks_split[0] == 'Yes':
     else:
         data.iloc[:, -2] = ks_const*(data['\sigma_gas'])**(ks_exp)
 
-params_df      = pd.DataFrame({key: [value] * r for key, value in params.items() if key != 'ks_exp'})
+params_df      = pd.DataFrame({key: [value] * r for key, value in params.items() if key != 'ks_exp' and key != 'mu_prime'})
 data_params    = data.join(params_df)
 data_listoftup = list(data_params[data_params.columns[1:]].to_records(index=False))
 data_pass      = kpc_r, data_listoftup
