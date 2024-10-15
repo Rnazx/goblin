@@ -14,6 +14,7 @@ import sys
 q        = Symbol('q')
 omega    = Symbol('\Omega')
 sigma    = Symbol('\Sigma')
+sigmah2 = Symbol('\Sigma_H_2')
 sigmatot = Symbol('Sigma_tot')
 sigmasfr = Symbol('Sigma_SFR')
 T        = Symbol('T')

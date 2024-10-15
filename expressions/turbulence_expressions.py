@@ -34,6 +34,7 @@ s_Myr      = 1e+6*(365*24*60*60)  # megayears to seconds
 q        = Symbol('q')
 omega    = Symbol('\Omega')
 sigma    = Symbol('\Sigma')
+sigmah2 = Symbol('\Sigma_H_2')
 sigmatot = Symbol('Sigma_tot')
 sigmasfr = Symbol('Sigma_SFR')
 T        = Symbol('T')
@@ -107,8 +108,15 @@ rho = sigma/(2*h)
 n   = rho/(mu*mh)
 nu  = (delta*sigmasfr)/(2*h*mstar)
 
+if switch['incl_moldat'] == 'No':
+    sigma_gas = sigma
+    n = sigma/((2*h)*(mu)*mh)
+else:
+    sigma_gas = sigma+sigmah2
+    n = ((sigma/(mu)) + (sigmah2/(mu_prime)))/((2*h)*mh)
+
 #defining a seperate expression for h only in terms of u
-h_vdisp = (u**2 + (A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
+h_vdisp = (u**2 + (A*cs)**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 
 nos = 3 #nos is the model number- 1, 2 or 3
 if nos == 1:
@@ -130,16 +138,14 @@ else:
     print('enter 1, 2 or 3 as model number')
 l = simplify(l)
 
-hg   = (u**2 + (A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
+hg   = (u**2 + (A*cs)**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 # hg = (u**2)/(3*pi*G*(sigma + (sigmatot/zet))) # trial for NGC 6946
-hsub = ((A*cs)**2)/(3*pi*G*(sigma + (sigmatot/zet)))
-hsup = (u**2)/(3*pi*G*(sigma + (sigmatot/zet)))
-rho  = sigma/(2*h)
+hsub = ((A*cs)**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
+hsup = (u**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 
-if switch['incl_moldat'] == 'No':
-    n = rho/((mu)*mh)
-else:
-    n = (rho/((mu)*mh)) + (rho/((mu_prime)*mh))
+
+
+
 
 taue = simplify(l/u)
 taur = simplify(6.8*s_Myr*(1/4)*(nu*cm_kpc**3*s_Myr/50)**(-1)*(E51)

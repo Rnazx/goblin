@@ -31,11 +31,13 @@ kpc_r = data.iloc[:, 0].values
 # finding total gas density
 # adds HI and H2 data based on switch 
 if switch['incl_moldat'] == 'Yes': 
-    data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
-else:
     data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] 
+    data[data.columns[3]] = (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
+else:
+    data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2]
+    data[data.columns[3]] = 0*data.iloc[:, 3]
 
-data.drop(data.columns[3], axis=1, inplace=True)
+# data.drop(data.columns[3], axis=1, inplace=True)
 
 # order of data: kpc_r, dat_sigmatot, dat_sigma, dat_q, dat_omega, dat_sigmasfr, T= data
 data.rename(columns={data.columns[2]: '\sigma_gas'}, inplace=True)
@@ -106,6 +108,7 @@ if ks_split[0] == 'Yes':
 
 params_df      = pd.DataFrame({key: [value] * r for key, value in params.items() if key != 'ks_exp'})#and key != 'mu_prime'
 data_params    = data.join(params_df)
+# print(data_params)
 data_listoftup = list(data_params[data_params.columns[1:]].to_records(index=False))
 data_pass      = kpc_r, data_listoftup
 

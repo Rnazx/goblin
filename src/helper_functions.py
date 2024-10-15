@@ -11,6 +11,7 @@ import matplotlib.patches as patches
 q        = Symbol('q')
 omega    = Symbol('\Omega')
 sigma    = Symbol('\Sigma')
+sigmah2 = Symbol('\Sigma_H_2')
 sigmatot = Symbol('Sigma_tot')
 sigmasfr = Symbol('Sigma_SFR')
 T        = Symbol('T')
@@ -113,11 +114,11 @@ def exp_analytical_data(express, data_pass, cs_f = None):
     express = express.subs(const).simplify(force=True)
     # Substitute the data for the observables as well as the parameters for each radii
     if cs_f is None:
-        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a}) for sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a in data_pass])
+        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmah2: sigh2, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a}) for sigt, sig, sigh2, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a in data_pass])
     else:
-        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
-                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a, cs:csf}) for (sigt, sig, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a), csf in zip(data_pass,cs_f)])
+        exp = np.array([express.evalf(subs={sigmatot: sigt, sigma: sig, sigmah2: sigh2, sigmasfr: sigsfr, q: qs, omega: oms, zet: zets, T: t,
+                   psi: ps, bet: b, calpha: ca, K: k, mu: m, mu_prime:M, A:a, cs:csf}) for (sigt, sig, sigh2, qs, oms, sigsfr, t, zets, ps, b, ca, k, m, M, a), csf in zip(data_pass,cs_f)])
 
 
     return exp
