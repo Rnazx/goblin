@@ -42,7 +42,7 @@ else:
 data.rename(columns={data.columns[2]: '\sigma_gas'}, inplace=True)
 
 # saving ratio of gas to stellar surface density
-ratio = data[data.columns[2]]/data[data.columns[1]]
+ratio = (data[data.columns[2]]+data[data.columns[3]])/data[data.columns[1]]
 
 os.chdir(os.path.join(base_path,'data','supplementary_data'))
 # so that new directories wont be made when the directory name is imported from this file

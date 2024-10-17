@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 \zeta= 15
 \psi= 1
 \beta= 8
 C_\alpha= 4
+=======
+\zeta= 30
+\psi= 3
+\beta= 1
+C_\alpha= 50
+>>>>>>> 3282b0496792bcf3298ebd1f655fe431f7162267
 K= 0.3
 mu= 14/11
 mu_prime= 2.4
