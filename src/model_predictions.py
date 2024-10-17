@@ -81,7 +81,6 @@ if switch['incl_moldat'] == 'Yes':
     cs_f = np.sqrt(np.array(((3*params['mu']/(4-params['mu']))*data.iloc[:, 2]*(cs_f)**2 + (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]*(cs_f/10)**2)/S_g, dtype=np.float64))
 
 
-
 # obtain 3D velocity dispersion data
 vdisp_df = pd.read_csv(os.path.join(base_path, 'data','supplementary_data', f'{galaxy_name}',f'{galaxy_name}_veldisp_ip.csv'))
 vdisp    = vdisp_df["v disp"].values # in cgs units
