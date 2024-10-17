@@ -4,6 +4,6 @@ C_l = 0.75
 m_* = 0.85
 \delta = 8e-3
 E_51 = 1
-K_\alpha = 1
+K_\alpha = 100
 Gamma = 1.6667
 R_\kappa= 0.3
