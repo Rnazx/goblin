@@ -1,7 +1,6 @@
 # This file is used to zip the data and parameters into a pickle file, 
 # which is then used in the main code to run the model.
 
-import matplotlib
 
 print('#####  Zipped data file running #####')
 
@@ -12,9 +11,9 @@ import os
 import pandas as pd
 from helper_functions import parameter_read
 import matplotlib.pyplot as plt
+import matplotlib
 
-galaxy_name = os.environ.get('galaxy_name')
-
+galaxy_name       = os.environ.get('galaxy_name')
 current_directory = str(os.getcwd())
 base_path         = os.environ.get('MY_PATH')
 
@@ -31,8 +30,8 @@ kpc_r = data.iloc[:, 0].values
 # finding total gas density
 # adds HI and H2 data based on switch 
 if switch['incl_moldat'] == 'Yes': 
-    data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] 
-    data[data.columns[3]] = (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3]
+    data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2] # \Sigma_HI
+    data[data.columns[3]] = (params['mu_prime']/(4-params['mu_prime']))*data.iloc[:, 3] # \Sigma_H_2
 else:
     data[data.columns[2]] = (3*params['mu']/(4-params['mu']))*data.iloc[:, 2]
     data[data.columns[3]] = 0*data.iloc[:, 3]

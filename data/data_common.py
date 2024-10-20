@@ -67,8 +67,7 @@ os.chdir(os.path.join(base_path, 'data','model_data', f'{galaxy_name}_data'))
 
 raw_data = pd.read_csv(f'combined_data_{galaxy_name}.csv', skiprows=1)
 
-# checking wei+21 data for m51
-# raw_data = pd.read_csv(f'combined_data_{galaxy_name} - Copy.csv', skiprows=1)
+# read distance and inclination corrections
 corrections = pd.read_csv(f'correction_data_{galaxy_name}.csv', skiprows=1, index_col=0)
 
 # distance correction
@@ -81,7 +80,6 @@ old_i = corrections.iloc[:-1,1].values #used new_i as no inclination correction 
 
 # converts all radii units to kpc
 # inclination and distance correction
-
 raw_data = incl_distance_correction(raw_data, distance_new = new_dist, distance_old = old_dist,\
                         i_new = np.radians(new_i), i_old = np.radians(old_i))
 
@@ -110,18 +108,18 @@ radii_df = keep_substring_columns(raw_data, 'r ')[0]
 # drop sigma_H2 before selecting coarsest data
 if switch['incl_moldat'] == 'No':
     # drop sigma_H2 column from raw_data and make new copy
-    raw_data_drop_sigmaH2 = raw_data.copy()
+    raw_data_drop_sigmaH2 = raw_data.copy() # raw_data_drop_sigmaH2 made only to find coarsest radii excluding sigma_H2
     raw_data_drop_sigmaH2 = remove_data(raw_data_drop_sigmaH2, 'sigma_H2')
     radii_df_drop_sigmaH2 = keep_substring_columns(raw_data_drop_sigmaH2, 'r ')[0]
-    coarsest_radii_mask = radii_df_drop_sigmaH2.isnull().sum().idxmax()
-    kpc_r = radii_df_drop_sigmaH2[coarsest_radii_mask].to_numpy()
+    coarsest_radii_mask   = radii_df_drop_sigmaH2.isnull().sum().idxmax()
+    kpc_r                 = radii_df_drop_sigmaH2[coarsest_radii_mask].to_numpy()
 
     if __name__ == '__main__': 
         print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data_drop_sigmaH2,coarsest_radii_mask)))
 
 else:
     coarsest_radii_mask = radii_df.isnull().sum().idxmax()
-    kpc_r = radii_df[coarsest_radii_mask].to_numpy()
+    kpc_r               = radii_df[coarsest_radii_mask].to_numpy()
 
     if __name__ == '__main__': 
         print("Coarsest radii is {} and the data it corresponds to is {}:".format(coarsest_radii_mask,get_adjacent_column(raw_data,coarsest_radii_mask)))

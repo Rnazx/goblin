@@ -1,4 +1,4 @@
-incl_moldat= Yes
+incl_moldat= No
 force_kennicut_scmidt= No, sigmadata
 tau= taue 
 u= datamaker

@@ -33,35 +33,35 @@ s_Myr      = 1e+6*(365*24*60*60)  # megayears to seconds
 # Defining the Observables
 q        = Symbol('q')
 omega    = Symbol('\Omega')
-sigma    = Symbol('\Sigma')
-sigmah2 = Symbol('\Sigma_H_2')
+sigma    = Symbol('\Sigma') # works as diffuse gas density when molecular data is included; total gas density when not included
+sigmah2  = Symbol('\Sigma_H_2') # to be used only when molecular data is included
 sigmatot = Symbol('Sigma_tot')
 sigmasfr = Symbol('Sigma_SFR')
 T        = Symbol('T')
 
 
 # Defining the Constants
-calpha = Symbol('C_alpha')
-gamma  = Symbol('gamma')
-boltz  = Symbol('k_B')
-mu     = Symbol('mu')
-mh     = Symbol('m_H')
-G      = Symbol('G')
-xio    = Symbol('xi_0')
-delta  = Symbol('\delta')
-mstar  = Symbol('m_*')
-cl     = Symbol('C_l')
-kappa  = Symbol('kappa')
-mach   = Symbol('M')
-E51    = Symbol('E_51')
-Rk     = Symbol('R_k')
-zet    = Symbol('zeta')
-psi    = Symbol('psi')
-kalpha = Symbol('K_alpha')
-bet    = Symbol('beta')
-alphak = Symbol('alpha_k')
-Gamma  = Symbol('Gamma')
-A      = Symbol('A')
+calpha   = Symbol('C_alpha')
+gamma    = Symbol('gamma')
+boltz    = Symbol('k_B')
+mu       = Symbol('mu')
+mh       = Symbol('m_H')
+G        = Symbol('G')
+xio      = Symbol('xi_0')
+delta    = Symbol('\delta')
+mstar    = Symbol('m_*')
+cl       = Symbol('C_l')
+kappa    = Symbol('kappa')
+mach     = Symbol('M')
+E51      = Symbol('E_51')
+Rk       = Symbol('R_k')
+zet      = Symbol('zeta')
+psi      = Symbol('psi')
+kalpha   = Symbol('K_alpha')
+bet      = Symbol('beta')
+alphak   = Symbol('alpha_k')
+Gamma    = Symbol('Gamma')
+A        = Symbol('A')
 mu_prime = Symbol('Mu')
 
 # Defining the general parameters
@@ -131,7 +131,7 @@ elif nos == 2:
 elif nos == 3:
     lsn = psi*0.14*cm_kpc*(E51)**Fraction(16, 51)*(n/0.1)**Fraction(-19, 51)*(cs/(cm_km*10))**Fraction(-1, 3)
     #Eqn 29 Chamandy and Sukurov (2020)
-    l = ((Gamma-1)/Gamma)*cl*lsn# lsb*((1+(lsn/lsb)*_Esn_Esb)/(1+_Esn_Esb)) 
+    l = ((Gamma-1)/Gamma)*cl*lsn
     #Eqn 33 Chamandy and Sukurov (2020)
     u = simplify(((4*pi/3)*l*lsn**3*cs**2*nu)**Fraction(1, 3))
 else:
@@ -143,10 +143,6 @@ hg   = (u**2 + (A*cs)**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 hsub = ((A*cs)**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 hsup = (u**2)/(3*pi*G*(sigma_gas + (sigmatot/zet)))
 
-
-
-
-
 taue = simplify(l/u)
 taur = simplify(6.8*s_Myr*(1/4)*(nu*cm_kpc**3*s_Myr/50)**(-1)*(E51)
                 ** Fraction(-16, 17) * (n/0.1)**Fraction(19, 17)*(cs/(cm_km*10)))
@@ -155,7 +151,7 @@ alphak1 = calpha*tau**2*u**2*omega/h
 alphak2 = calpha*tau*u**2/h
 alphak3 = kalpha*u
 
-turb_expr = hg,h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3
+turb_expr = hg, h_vdisp, rho, nu, u, l, taue, taur, alphak1, alphak2, alphak3
 
 with open('turb_exp.pickle', 'wb') as f:
     pickle.dump(turb_expr, f)
