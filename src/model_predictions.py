@@ -121,7 +121,7 @@ for i,hi in enumerate(h_init_trys):
             tau_f = taur_f
         else:
             tau_f = np.minimum(taue_f, taur_f)  
-
+        # print((l_f*u_f)/6.5e18)
         omega  = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
