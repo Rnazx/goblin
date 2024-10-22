@@ -490,8 +490,8 @@ if switch['incl_moldat'] == 'Yes':
 
 else:
     if galaxy_name == 'm31':
-        ax.set_ylim(bottom=4)
-        ax.yaxis.set_ticks(np.arange(4,max(dat_u)+16,4))
+        ax.set_ylim(bottom=0)#changed to 0
+        ax.yaxis.set_ticks(np.arange(0,max(dat_u)+16,4))
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1, 1),prop={
                 'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
     elif galaxy_name == 'm33':
