@@ -121,7 +121,7 @@ for i,hi in enumerate(h_init_trys):
             tau_f = taur_f
         else:
             tau_f = np.minimum(taue_f, taur_f)  
-        # print((l_f*u_f)/6.5e18)
+        
         omega  = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
@@ -148,6 +148,12 @@ for i,hi in enumerate(h_init_trys):
         bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
 
         dkdc_f  = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
+        Beq_f  = datamaker(Beq, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
+        # print(dkdc_f,dkdc_f>=1)
+        # print(np.minimum(np.ones(len(kpc_r)),kah)>=omt)
+        # print(7*(1+(biso_f**2/Beq_f**2))/9)#gopalkrishnan&Subramanian
+        print(62.7*np.exp((10*np.ones(len(kpc_r))-kpc_r)/19.8))
+        print(u_f*1e-5)
         alpham_f = alphak_f*((1/dkdc_f)-1)
 
         Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)

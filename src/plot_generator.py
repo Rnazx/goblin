@@ -325,7 +325,8 @@ except NameError:
 
 # log scale if moldata is included
 if switch['incl_moldat'] == 'Yes':
-    ax.set_yscale('log')
+    #ax.set_yscale('log')
+    pass
 else:
     if galaxy_name == 'ngc6946':
         ax.set_ylim(bottom = 0)
@@ -611,7 +612,8 @@ ax.set_xlabel(r'Radius (kpc)', fontsize = fs)
 
 # log scale if moldata is included
 if switch['incl_moldat'] == 'Yes':
-    ax.set_yscale('log')
+    pass
+    #ax.set_yscale('log')
 else:
     ax.set_ylim(bottom=0)
     ax.yaxis.set_ticks(np.arange(0,max(Btot)+max(G_scal_Bbartot_err*1e+6)+4,5))
