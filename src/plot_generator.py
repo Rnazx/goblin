@@ -644,7 +644,7 @@ plt.savefig(save_files_dir+r'\3 B')
 fig,ax = plt.subplots(nrows = 1, ncols = 1, figsize = (7, 5), tight_layout = True)
 ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
-pb_bool = False
+pb_bool = True
 # plotting model outputs
 if galaxy_name == 'm31':
     ax.plot(kpc_r, -180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{reg}}$')
