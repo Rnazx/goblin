@@ -3,7 +3,7 @@
 print('#####  Plotting starts #####')
 
 import matplotlib
-from helper_functions import datamaker, parameter_read, analytical_pitch_angle_integrator, plot_rectangle, fill_error
+from helper_functions import datamaker, parameter_read, analytical_pitch_angle_integrator, plot_rectangle, fill_error, new_pitch_angle_integrator
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy import *
@@ -110,9 +110,13 @@ except NameError:
 
 os.chdir(current_directory)
 
+# # calculate pitch angles and errors
+# pB, po, pb, pB_err, po_err, pb_err = analytical_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
+#                                    Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err)
+
 # calculate pitch angles and errors
-pB, po, pb, pB_err, po_err, pb_err = analytical_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
-                                   Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err)
+pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
+                                   Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass)
 
 # calculate observational analogues of field strengths and errors
 G_scal_Bbartot = np.sqrt(biso_f**2 + bani_f**2 + Bbar_f**2)
@@ -640,24 +644,31 @@ plt.savefig(save_files_dir+r'\3 B')
 fig,ax = plt.subplots(nrows = 1, ncols = 1, figsize = (7, 5), tight_layout = True)
 ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
-
+pb_bool = False
 # plotting model outputs
 if galaxy_name == 'm31':
-    ax.plot(kpc_r, 180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{reg}}$')
-    ax.plot(kpc_r, 180*po/np.pi , c='g', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{ord}}$')
+    ax.plot(kpc_r, -180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{reg}}$')
+    ax.plot(kpc_r, -180*po/np.pi , c='g', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{ord}}$')
+    if pb_bool: ax.plot(kpc_r, -180*pb/np.pi , c='b', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{b}}$')
 else:
-    ax.plot(kpc_r, 180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k')
-    ax.plot(kpc_r,180*po/np.pi , c='g', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k')
-
+    ax.plot(kpc_r, -180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k')
+    ax.plot(kpc_r,-180*po/np.pi , c='g', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k')
+    if pb_bool: ax.plot(kpc_r,-180*pb/np.pi , c='b', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k')
+# print(-180*pB/np.pi,-180*po/np.pi,-180*pb/np.pi)
 # plotting error
 try:
-    fill_error(ax, kpc_r, 180*pB/np.pi,180*pB_err/np.pi, 'r')
+    fill_error(ax, kpc_r, -180*pB/np.pi,180*pB_err/np.pi, 'r')
 except NameError:
     pass
 try:
-    fill_error(ax, kpc_r, 180*po/np.pi,180*po_err/np.pi, 'g')
+    fill_error(ax, kpc_r, -180*po/np.pi,180*po_err/np.pi, 'g')
 except NameError:
     pass
+if pb_bool: 
+    try:
+        fill_error(ax, kpc_r, -180*pb/np.pi,180*pb_err/np.pi, 'b')
+    except NameError:
+        pass
 
 percent_err_pB = (pB_err/pB)*100
 percent_err_po = (po_err/po)*100

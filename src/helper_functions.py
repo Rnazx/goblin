@@ -2,7 +2,7 @@ import numpy as np
 from sympy import *
 import inspect
 from scipy.optimize import curve_fit, fsolve, root
-from scipy.integrate import quad
+from scipy.integrate import quad, dblquad
 import os
 import matplotlib.patches as patches
 
@@ -218,8 +218,8 @@ def analytical_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, ta
     p_B = Symbol('p_B')
     s   = Symbol('b_a')
 
-    pB     = np.arctan(-tanpB_f)
-    pB_err = -tanpB_err/(1+tanpB_f**2)
+    pB     = np.arctan(tanpB_f)
+    pB_err = tanpB_err/(1+tanpB_f**2)
     pb     = np.arctan(tanpb_f)
     pb_err = tanpb_err/(1+tanpb_f**2)
 
@@ -248,6 +248,85 @@ def analytical_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, ta
 
     return pB, po, pb, pB_err, po_err, pb_err
 
+#from uniform distrubuted p
+def new_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass):
+    b   = Symbol('b')
+    B   = Symbol('B')
+    p_b = Symbol('p_b')
+    p_B = Symbol('p_B')
+    s   = Symbol('b_a')
+
+    pB     = np.arctan(tanpB_f)
+    pB_err = tanpB_err/(1+tanpB_f**2)
+    qOmtau_f = np.float64(exp_analytical_data(q*omega, data_pass)*taue_f)
+
+    #Number of p values between -\pi/2 and \pi/2
+    N = 1000
+
+    #Frequency
+    p_min = -np.pi/2
+    p_max = np.pi/2
+
+    p = np.arange(N) / (N - 1) * (p_max - p_min) + p_min 
+    Ns = len(kpc_r)
+    pb_dist = np.zeros((Ns,N))
+    mean_pb = np.zeros((Ns))
+    std_pb = np.zeros((Ns))
+
+    for i in range(Ns):
+        pb_dist[i,:] = np.arctan(np.tan(p[:])/(1-np.tan(p[:])*qOmtau_f[i]))
+        mean_pb[i] = np.mean(pb_dist[i,:])
+        std_pb[i] = np.std( pb_dist[i,:] )
+
+    pb     = np.array(mean_pb)
+    pb_err = np.array(std_pb)
+    
+    Nb = 1000
+    po_dist = np.zeros((Ns,N))
+    mean_po = np.zeros((Ns))
+    std_po = np.zeros((Ns))
+    Sum = np.zeros((Ns,N))
+    
+    #Calculate po from the version of the formula used in the paper
+    for i in range(Ns):
+        dbtilde = bani_f[i] / Nb * 10
+        btilde = ( np.arange(Nb + 1) - Nb / 2 ) / Nb * bani_f[i] * 10 
+        for j in range(Nb): 
+            Sum[i,:] += np.exp( - btilde[j]**2 / 2 / bani_f[i]**2 ) * ( 1 + 2 * Bbar_f[i] * btilde[j] / ( Bbar_f[i]**2 + btilde[j]**2 ) * np.cos( pb_dist[i,:] - pB[i] ) ) \
+        * np.arctan( ( Bbar_f[i] * np.sin( pB[i]) + btilde[j] * np.sin( pb_dist[i,:] ) ) / ( Bbar_f[i] * np.cos( pB[i] ) + btilde[j] * np.cos( pb_dist[i,:] ) ) ) * dbtilde 
+
+        po_dist[i,:] = 1 / ( 2 * np.pi )**0.5 / bani_f[i] * Sum[i,:]
+
+        mean_po[i] = np.mean(po_dist[i,:])
+        #std_po[i] = np.sqrt( np.mean( ( po[i,:] - mean_po[i] )**2 ) )
+        std_po[i] = np.std( po_dist[i,:] )
+
+    po_new = np.array(mean_po)
+    po_new_err = np.array(std_po)
+
+    # po = (exp(-b**2/(2*s**2))/
+    #                 (sqrt(2*(pi))*s))*(1+(2*B*b*cos(p_b-p_B))/
+    #                             (b**2 + B**2))*atan((B*sin(p_B) + b*sin(p_b))/
+    #                                                         ((B*cos(p_B)) + b*cos(p_b)))
+
+    # pogen    = lambdify([b,B, p_B, p_b, s ], po)
+    # dpodbani = lambdify([b,B, p_b, p_B, s],diff(po,s))
+    # dpodBbar = lambdify([b,B, p_b, p_B, s],diff(po,B))
+    # dpodpB   = lambdify([b,B, p_b, p_B, s],diff(po,p_B))
+    # dpodpb   = lambdify([b,B, p_b, p_B, s],diff(po,p_b))
+    # print(pogen)
+    # brms = np.sqrt(np.average(bani_f**2))
+    # def integrator(fn, interval = 1e+2):
+    #     return np.array([dblquad(fn, -interval, interval,p_min,p_max, args=(Bbar_f[i], pB[i], bani_f[i]))[0] for i in range(Ns)])#
+    # po = integrator(pogen)
+
+    # inte   = 1e+3
+    # po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+    #             points=[-inte*brms, inte*brms])[1] for i in range(Ns)]) 
+    # po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
+    #                 +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pb_err)**2)
+    # print(po,po_new)
+    return pB, po_new, pb, pB_err, po_new_err, pb_err
 
 # plot rectangle given four coordinates
 def plot_rectangle(ax, x1, y1, x2, y2, color):
