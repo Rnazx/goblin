@@ -82,7 +82,7 @@ tanpB = -((pi**2)*tau*(u**2))/(12*q*omega*(h**2))
 tanpB = simplify(tanpB)
 tanpB = tanpB.subs([(tau, tau), (l, l)])
 tanpB = simplify(tanpB)
-tanpb = 1/(1+q*omega*tau)
+tanpb = -1/(1+q*omega*tau)
 
 mag_expr = biso, bani, Bbar, tanpb, tanpB, Beq, eta, cs_exp, Dk, Dc
 

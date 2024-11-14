@@ -115,13 +115,14 @@ for i,hi in enumerate(h_init_trys):
 
         taue_f = datamaker(taue, data_pass, h_f, None, None, u_f, l_f,cs_f)
         taur_f = datamaker(taur, data_pass, h_f, None, None, u_f, l_f,cs_f)
+        print(taue_f<taur_f)
         if switch['tau']=='taue':
             tau_f = taue_f 
         elif switch['tau']=='taur':
             tau_f = taur_f
         else:
             tau_f = np.minimum(taue_f, taur_f)  
-        # print((l_f*u_f)/6.5e18)
+        
         omega  = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
         calpha = Symbol('C_alpha')
@@ -148,11 +149,18 @@ for i,hi in enumerate(h_init_trys):
         bani_f = datamaker(bani, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
 
         dkdc_f  = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
+        Beq_f  = datamaker(Beq, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
+        # print(dkdc_f,dkdc_f>=1)
+        # print(np.minimum(np.ones(len(kpc_r)),kah)>=omt)
+        # print(7*(1+(biso_f**2/Beq_f**2))/9)#gopalkrishnan&Subramanian
+        # print(62.7*np.exp((10*np.ones(len(kpc_r))-kpc_r)/19.8))
+        # print(u_f*1e-5)
         alpham_f = alphak_f*((1/dkdc_f)-1)
-
+        
         Bbar_f = datamaker(Bbar, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
 
         tanpB_f = datamaker(tanpB, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
+        # print(tanpB_f)
         tanpb_f = datamaker(tanpb, data_pass, h_f, tau_f, None, u_f, l_f,cs_f)
         mag_obs = kpc_r, h_f, l_f, u_f, np.float64(cs_f), alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f #, alpham_f, omt, kah
         os.chdir(os.path.join(base_path,'outputs'))
