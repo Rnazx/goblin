@@ -1,5 +1,5 @@
 incl_moldat= No
 force_kennicut_scmidt= No, sigmadata
-tau= taue 
+tau= taue
 u= datamaker
 h= root_find

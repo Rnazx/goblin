@@ -154,7 +154,8 @@ def axis_pars(ax):
     # add tick marks without labels at the top and right of the plot also
     if galaxy_name == 'm31':
         # add the plot title 
-        ax.set_title(r'M31', fontsize = title_textsize)
+        if params['\psi'] == 1:
+            ax.set_title(r'M31', fontsize = title_textsize)
         # set bottom of x axis to be 6
         ax.set_xlim(left=6)
         ax.xaxis.set_ticks(np.arange(6, 17, 1)) 
@@ -285,7 +286,7 @@ except NameError:
     pass
 
 if galaxy_name == 'm31':
-    bbox_to_anchor = (0.08, 0.63, 0.3, 0.3)  # Example values: (x0, y0, width, height)
+    bbox_to_anchor = (0.1, 0.63, 0.3, 0.3)  # Example values: (x0, y0, width, height)
     axins = inset_axes(ax, width="100%", height="100%", loc='upper left', 
                     bbox_to_anchor=bbox_to_anchor, bbox_transform=ax.transAxes)
     # change transparency of inset plot
@@ -339,6 +340,8 @@ ax.set_ylabel(r'$h$, $l$ (kpc)', fontsize = fs)
 
 # legend specs 
 if galaxy_name == 'm31':
+    if params['\psi'] == 2:
+            ax.set_title(r'M31Alt Lengths', fontsize = title_textsize)
     ax.legend(fontsize = lfs, frameon = frameon_param, handlelength = hd, ncol = 1, bbox_to_anchor = (1, 1), prop = {
             'size': leg_textsize-1,  'family': 'Times New Roman'}, fancybox = True, framealpha = frame_alpha_param, handletextpad = legend_labelspace, columnspacing = 0.7)
 elif galaxy_name == 'm51':
@@ -396,6 +399,9 @@ else:
     ref_cs    = ' (Gusev et al. 2013)'
     ref_data  = ' Boomsma et al. (2008)' 
 
+# data for u all galaxies
+ax.plot(kpc_r, dat_u, c='g', label=r'{}'.format(ref_data),linestyle=' ',alpha = 1,marker='*',mfc='b',mec='k',mew=1, markersize = 13)
+
 # extra data for M31 and NGC 6946
 if galaxy_name == 'm31':
     dat_u_warp = dat_u_warp/cm_km
@@ -403,8 +409,6 @@ if galaxy_name == 'm31':
 elif galaxy_name == 'ngc6946':
     dat_u_bacchini = dat_u_bacchini/cm_km
     ax.plot(kpc_r, dat_u_bacchini, c='g',  linestyle=' ', label=r' Bacchini et al. (2019)', alpha = 1,marker='D',mfc='b',mec='k',mew=1, markersize = 8)
-# data for u all galaxies
-ax.plot(kpc_r, dat_u, c='g', label=r'{}'.format(ref_data),linestyle=' ',alpha = 1,marker='*',mfc='b',mec='k',mew=1, markersize = 13)
 
 if galaxy_name == 'm31':
     ax.plot(kpc_r, cs, color='g', zorder=3, linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $c_\mathrm{s}$'+ '{}'.format(ref_cs))
@@ -490,6 +494,8 @@ if switch['incl_moldat'] == 'Yes':
 
 else:
     if galaxy_name == 'm31':
+        if params['\psi'] == 2:
+            plt.title(r'M31Alt Speeds', fontsize = title_textsize)
         ax.set_ylim(bottom=0)#changed to 0
         ax.yaxis.set_ticks(np.arange(0,max(dat_u)+16,4))
         ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1, 1),prop={
@@ -625,11 +631,18 @@ ax.set_ylabel('Magnetic field strength ($\mathrm{\mu G}$)', fontsize=fs)
 # legend specs
 axis_pars(ax)
 if galaxy_name == 'm31':
+    if params['\psi'] == 2:
+            plt.title(r'M31Alt Magnetic Field Strength', fontsize = title_textsize)
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=2, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 else:
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
+    if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
+            if switch['tau'] == 'taue':
+                plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
+            else:
+                plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
 
 plt.savefig(save_files_dir+r'\3 B')
 
@@ -684,7 +697,7 @@ elif galaxy_name == 'm33':
         plot_rectangle(ax, mrange_endps[i], 180*pb_beck19[i]/np.pi-180*err_pb_beck19[i]/np.pi, mrange_endps[i+1], 180*pb_beck19[i]/np.pi+180*err_pb_beck19[i]/np.pi, color='gray')
     
     ax.errorbar(po_range_beck19, 180*po_beck19/np.pi,zorder=2,elinewidth=1, yerr=180*err_po_beck19/np.pi, ms=11, mew=1, capsize=2,
-                  c='k', linestyle=' ', marker='P', mfc='g', mec='k',ecolor='k') #,label=r' $p_{\mathrm{ord}}$ (Beck et al. (2019))')
+                  c='k', linestyle=' ', marker='P', mfc='g', mec='k',ecolor='k',label=r' $-p_{\mathrm{ord}}$ (Beck et al. (2019))')
     for i in range(len(range_po)-1):
         plot_rectangle(ax, range_po[i], 180*po_beck19[i]/np.pi-180*err_po_beck19[i]/np.pi, range_po[i+1], 180*po_beck19[i]/np.pi+180*err_po_beck19[i]/np.pi, color='gray'   )
         
@@ -692,7 +705,7 @@ elif galaxy_name == 'm51':
 
 # #Beck+19 data
     ax.errorbar(range_po_beck19, po_beck19/(np.pi/180),zorder=2,elinewidth=1, yerr=err_po/(np.pi/180), markersize=11, mew=1, capsize=2,
-                  c='k', linestyle=' ', marker='P', mfc='g', mec='k',ecolor='k')
+                  c='k', linestyle=' ', marker='P', mfc='g', mec='k',ecolor='k',label=r' $-p_{\mathrm{ord}}$ (Beck et al. (2019))')
     for i in range(len(po_endps_1)-1):
         plot_rectangle(ax, po_endps_1[i], po_beck19[i]/(np.pi/180)-err_po[i]/(np.pi/180), po_endps_1[i+1], po_beck19[i]/(np.pi/180)+err_po[i]/(np.pi/180), color='gray')
     for i in range(len(po_endps_2)-1):
@@ -753,6 +766,12 @@ ax.yaxis.set_ticks(np.arange(0, 100, 10))
 
 # legend specs
 axis_pars(ax)
+if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
+            if switch['tau'] == 'taue':
+                plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
+            else:
+                plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
+
 if galaxy_name == 'm51':
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
@@ -763,6 +782,8 @@ elif galaxy_name == 'm33':
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 else:
+    if params['\psi'] == 2:
+            plt.title(r'M31Alt Magnetic Pitch Angles', fontsize = title_textsize)
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
 
@@ -838,6 +859,10 @@ tau_f  = taue_f
 # calculate for plotting
 omt = datamaker(omega, data_pass, h_f, tau_f)*tau_f
 kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f)*(h_f/(tau_f*u_f))
+
+print(galaxy_name,'omt: ')
+for i in range(len(omt)):
+    print(omt[i])
 
 ax.axhline(y=0, color='k',linestyle=':')
 ax.axhline(y=1, color='g', linewidth=lw, alpha=1)
