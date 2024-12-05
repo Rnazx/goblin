@@ -872,7 +872,7 @@ tau_f  = taue_f
 # calculate for plotting
 omt = datamaker(omega, data_pass, h_f, tau_f)*tau_f
 kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f)*(h_f/(tau_f*u_f))
-
+print(pb)
 print(galaxy_name,'omt: ')
 for i in range(len(omt)):
     print(omt[i])

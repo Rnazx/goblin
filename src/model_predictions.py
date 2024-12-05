@@ -115,7 +115,7 @@ for i,hi in enumerate(h_init_trys):
 
         taue_f = datamaker(taue, data_pass, h_f, None, None, u_f, l_f,cs_f)
         taur_f = datamaker(taur, data_pass, h_f, None, None, u_f, l_f,cs_f)
-        print(taue_f<taur_f)
+        # print(taue_f<taur_f)
         if switch['tau']=='taue':
             tau_f = taue_f 
         elif switch['tau']=='taur':
@@ -150,7 +150,7 @@ for i,hi in enumerate(h_init_trys):
 
         dkdc_f  = datamaker((Dk/Dc), data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
         Beq_f  = datamaker(Beq, data_pass, h_f, tau_f, alphak_f, u_f, l_f,cs_f)
-        # print(dkdc_f,dkdc_f>=1)
+        print('dkdc_f >= 1',dkdc_f>=1)
         # print(np.minimum(np.ones(len(kpc_r)),kah)>=omt)
         # print(7*(1+(biso_f**2/Beq_f**2))/9)#gopalkrishnan&Subramanian
         # print(62.7*np.exp((10*np.ones(len(kpc_r))-kpc_r)/19.8))

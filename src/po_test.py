@@ -66,56 +66,27 @@ current_directory = str(os.getcwd())
 os.chdir(os.path.join(base_path,'outputs'))
 
 with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
+    model_f = pickle.load(
+        f)
+with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
     kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f = pickle.load(
         f)
-with open('errors_subsonic.out', 'rb') as f:
-        subsonic_errors= pickle.load(f)
-with open('errors_supersonic.out', 'rb') as f:
-        supersonic_errors= pickle.load(f)
-h_err, l_err, u_err, cs_err, alphak_err, tau_err, \
-        taur_err, biso_err, bani_err, Bbar_err, \
-                tanpB_err, tanpb_err, dkdc_err = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
-
-# delete this file from the outputs folder
-# os.remove(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out')
-
-# compare errors in sub/super-sonic regimes and save the maximum of the two
-err_quant_list = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
 
 os.chdir(os.path.join(base_path,'inputs'))
 
 with open('zip_data.in', 'rb') as f:
     kpc_r, data_pass = pickle.load(f)
 
-# interpolate velocity and scale height data as per availability
-dat_u = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS, kpc_r, method='linear',
-                 fill_value=nan, rescale=False)*1e+5
-try: # only for M31
-    dat_u_warp = griddata(kpc_radius, np.sqrt(3)*kms_sigmaLOS_warp, kpc_r, method='linear',
-                    fill_value=nan, rescale=False)*1e+5
-except NameError:
-    pass
-
-try: # Bacchini+19 data for NGC 6946
-    dat_u_bacchini = griddata(kpc_radius_b, np.sqrt(3)*kms_sigmaLOS_b, kpc_r, method='linear',
-                    fill_value=nan, rescale=False)*1e+5
-except NameError:
-    pass
-
-try: # Bacchini+19 data for NGC 6946 h
-    dat_h_bacchini = griddata(kpc_radius_h_b, h_b, kpc_r, method='linear',
-                    fill_value=nan, rescale=False)
-except NameError:
-    pass
-
-os.chdir(current_directory)
-
-# # calculate pitch angles and errors
-# pB, po, pb, pB_err, po_err, pb_err = analytical_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
-#                                    Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err)
 
 # calculate pitch angles and errors
-pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
-                                   Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass)
+# pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
+#                                    Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass)
+os.chdir(os.path.join(base_path,'outputs'))
 
-# print(pB,pb,po)
+with open(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(10.0)+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out', 'rb') as f:
+    model_f2 = pickle.load(
+        f)
+
+print('kpc_r, h_f, l_f, u_f, cs_f, alphak_f, taue_f, taur_f, biso_f, bani_f, Bbar_f, tanpB_f, tanpb_f , dkdc_f')
+for i,j in zip(model_f,model_f2):
+    print(np.average(np.log2(i/j)))
