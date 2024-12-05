@@ -1469,6 +1469,4 @@ if func_number == 8:
     plt.close()
     os.chdir('..')
 
-# if func_number == 9:
-#     # plot omega times t
 print('######  OUTPUT COMPARISON FILE ENDS #####')
