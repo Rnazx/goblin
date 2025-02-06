@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sympy import *
 import inspect
 from scipy.optimize import curve_fit, fsolve, root
@@ -52,7 +53,10 @@ h   = Symbol('h')
 cs = Symbol('c_S')
 
 ###############################################################################################
-base_path = os.environ.get('MY_PATH')
+base_path   = os.environ.get('MY_PATH')
+galaxy_name = os.environ.get('galaxy_name')
+
+
 
 g_Msun = 1.989e33  # solar mass in g
 cgs_G  = 6.674e-8  # gravitational constant in cgs units
@@ -249,16 +253,22 @@ def analytical_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, ta
     return pB, po, pb, pB_err, po_err, pb_err
 
 #from uniform distrubuted p
-def new_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass):
+def new_pitch_angle_integrator(kpc_r, tanpB_f, Bbar_f, bani_f, tanpB_err, Bbar_err, bani_err, taue_f, tau_err, data_pass, rel_err):
     b   = Symbol('b')
     B   = Symbol('B')
     p_b = Symbol('p_b')
     p_B = Symbol('p_B')
     s   = Symbol('b_a')
 
+    #get parameter values
+    params = parameter_read(os.path.join(base_path,'inputs','parameter_file.in'))
+    switch = parameter_read(os.path.join(base_path,'inputs','switches.in'))
+
     pB     = np.arctan(tanpB_f)
     pB_err = tanpB_err/(1+tanpB_f**2)
-    qOmtau_f = np.float64(exp_analytical_data(q*omega, data_pass)*taue_f)
+    q_f = np.float64(exp_analytical_data(q, data_pass))
+    Om_f = np.float64(exp_analytical_data(omega, data_pass))
+    qOmtau_f = np.float64(q_f*Om_f*taue_f)
 
     #Number of p values between -\pi/2 and \pi/2
     N = 1000
@@ -270,16 +280,26 @@ def new_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err
     p = np.arange(N) / (N - 1) * (p_max - p_min) + p_min 
     Ns = len(kpc_r)
     pb_dist = np.zeros((Ns,N))
+    pb_err_dist = np.zeros((Ns,N))
     mean_pb = np.zeros((Ns))
     std_pb = np.zeros((Ns))
+    err_pb = np.zeros((Ns))
+
+    
+    delq = q_f*rel_err['rel_err_q'].values
+    delomega = Om_f*rel_err['rel_err_omega'].values
 
     for i in range(Ns):
         pb_dist[i,:] = np.arctan(np.tan(p[:])/(1-np.tan(p[:])*qOmtau_f[i]))
+        pb_err_dist[i, :] = pb_dist[i,:]*(1/(1+np.tan(pb_dist[i,:])**2))*(1/(1-qOmtau_f[i]*np.tan(p[:]))**2)*(np.tan(p[:])**2)*np.sqrt((Om_f[i]*taue_f[i]*delq[i])**2+(q_f[i]*taue_f[i]*delomega[i])**2+(Om_f[i]*q_f[i]*tau_err[i])**2)
         mean_pb[i] = np.mean(pb_dist[i,:])
         std_pb[i] = np.std( pb_dist[i,:] )
+        err_pb[i] = np.mean(pb_err_dist[i,:])
 
     pb     = np.array(mean_pb)
-    pb_err = np.array(std_pb)
+
+
+    pb_err = std_pb
     
     Nb = 1000
     po_dist = np.zeros((Ns,N))
@@ -303,30 +323,7 @@ def new_pitch_angle_integrator(kpc_r, tanpB_f, tanpb_f,Bbar_f, bani_f, tanpB_err
 
     po_new = np.array(mean_po)
     po_new_err = np.array(std_po)
-
-    # po = (exp(-b**2/(2*s**2))/
-    #                 (sqrt(2*(pi))*s))*(1+(2*B*b*cos(p_b-p_B))/
-    #                             (b**2 + B**2))*atan((B*sin(p_B) + b*sin(p_b))/
-    #                                                         ((B*cos(p_B)) + b*cos(p_b)))
-
-    # pogen    = lambdify([b,B, p_B, p_b, s ], po)
-    # dpodbani = lambdify([b,B, p_b, p_B, s],diff(po,s))
-    # dpodBbar = lambdify([b,B, p_b, p_B, s],diff(po,B))
-    # dpodpB   = lambdify([b,B, p_b, p_B, s],diff(po,p_B))
-    # dpodpb   = lambdify([b,B, p_b, p_B, s],diff(po,p_b))
-    # print(pogen)
-    # brms = np.sqrt(np.average(bani_f**2))
-    # def integrator(fn, interval = 1e+2):
-    #     return np.array([dblquad(fn, -interval, interval,p_min,p_max, args=(Bbar_f[i], pB[i], bani_f[i]))[0] for i in range(Ns)])#
-    # po = integrator(pogen)
-
-    # inte   = 1e+3
-    # po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
-    #             points=[-inte*brms, inte*brms])[1] for i in range(Ns)]) 
-    # po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
-    #                 +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*pb_err)**2)
-    # print(po,po_new)
-    return pB, po_new, pb, pB_err, po_new_err, pb_err
+    return pB, po_new, pb, pB_err, po_new_err, err_pb # pb_err
 
 # plot rectangle given four coordinates
 def plot_rectangle(ax, x1, y1, x2, y2, color):

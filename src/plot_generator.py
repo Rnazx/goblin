@@ -77,7 +77,7 @@ h_err, l_err, u_err, cs_err, alphak_err, tau_err, \
                 tanpB_err, tanpb_err, dkdc_err = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
 
 # delete this file from the outputs folder
-os.remove(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out')
+#os.remove(f'{galaxy_name}output_ca_'+str(params[r'C_\alpha'])+'K_'+str(params[r'K'])+'z_'+str(params[r'\zeta'])+'psi_'+str(params[r'\psi'])+'b_'+str(params[r'\beta'])+'.out')
 
 # compare errors in sub/super-sonic regimes and save the maximum of the two
 err_quant_list = [np.maximum(sub, sup) for sub,sup in zip(subsonic_errors, supersonic_errors)]
@@ -114,9 +114,21 @@ os.chdir(current_directory)
 # pB, po, pb, pB_err, po_err, pb_err = analytical_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
 #                                    Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err)
 
+
+#############################################################################################################################################
+save_files_dir = os.path.join(base_path , 'data','supplementary_data',galaxy_name)
+filename       = r'{}_rel_err_observables_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
+                            params[r'C_\alpha'],params[r'\beta'],params['A'])
+os.chdir(save_files_dir)
+print(save_files_dir)
+rel_err = pd.read_csv(os.path.join(save_files_dir,filename))
+os.chdir(base_path)
 # calculate pitch angles and errors
-pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,tanpb_f, \
-                                   Bbar_f, bani_f, tanpB_err,tanpb_err, Bbar_err, bani_err, taue_f, data_pass)
+pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,\
+                                   Bbar_f, bani_f, tanpB_err, Bbar_err, bani_err, taue_f, tau_err, data_pass, rel_err)
+#############################################################################################################################################
+print(pb,pb_err)
+
 
 # calculate observational analogues of field strengths and errors
 G_scal_Bbartot = np.sqrt(biso_f**2 + bani_f**2 + Bbar_f**2)

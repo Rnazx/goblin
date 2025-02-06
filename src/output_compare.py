@@ -211,10 +211,10 @@ galaxies = ['m31', 'm33', 'm51', 'ngc6946']
 # color map for each galaxy
 color_map = {'m31': 'blue', 'm33': 'green', 'm51': 'red', 'ngc6946': 'purple'}
 
-params_dict = {'m31':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414},
-               'm33':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
-               'm51':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
-               'ngc6946': {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 30.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}}
+params_dict = {'m31':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414},
+               'm33':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414}, 
+               'm51':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414}, 
+               'ngc6946': {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 20.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414}}
 
 # get today's date
 today = str(date.today())
