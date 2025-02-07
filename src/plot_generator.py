@@ -120,14 +120,12 @@ save_files_dir = os.path.join(base_path , 'data','supplementary_data',galaxy_nam
 filename       = r'{}_rel_err_observables_moldat_{},taue,z_{},psi_{},ca_{},beta_{},A_{}.csv'.format(galaxy_name,switch['incl_moldat'],params[r'\zeta'],params[r'\psi'],
                             params[r'C_\alpha'],params[r'\beta'],params['A'])
 os.chdir(save_files_dir)
-print(save_files_dir)
 rel_err = pd.read_csv(os.path.join(save_files_dir,filename))
 os.chdir(base_path)
 # calculate pitch angles and errors
 pB, po, pb, pB_err, po_err, pb_err = new_pitch_angle_integrator(kpc_r, tanpB_f,\
                                    Bbar_f, bani_f, tanpB_err, Bbar_err, bani_err, taue_f, tau_err, data_pass, rel_err)
 #############################################################################################################################################
-print(pb,pb_err)
 
 
 # calculate observational analogues of field strengths and errors
@@ -884,10 +882,9 @@ tau_f  = taue_f
 # calculate for plotting
 omt = datamaker(omega, data_pass, h_f, tau_f)*tau_f
 kah = datamaker(kalpha/calpha, data_pass, h_f, tau_f)*(h_f/(tau_f*u_f))
-print(pb)
-print(galaxy_name,'omt: ')
-for i in range(len(omt)):
-    print(omt[i])
+# print(galaxy_name,'omt: ')
+# for i in range(len(omt)):
+#     print(omt[i])
 
 ax.axhline(y=0, color='k',linestyle=':')
 ax.axhline(y=1, color='g', linewidth=lw, alpha=1)

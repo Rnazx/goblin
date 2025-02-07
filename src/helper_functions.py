@@ -320,10 +320,38 @@ def new_pitch_angle_integrator(kpc_r, tanpB_f, Bbar_f, bani_f, tanpB_err, Bbar_e
         mean_po[i] = np.mean(po_dist[i,:])
         #std_po[i] = np.sqrt( np.mean( ( po[i,:] - mean_po[i] )**2 ) )
         std_po[i] = np.std( po_dist[i,:] )
+    
+    po = (exp(-b**2/(2*s**2))/
+                    (sqrt(2*(pi))*s))*(1+(2*B*b*cos(p_b-p_B))/
+                                (b**2 + B**2))*atan((B*sin(p_B) + b*sin(p_b))/
+                                                            ((B*cos(p_B)) + b*cos(p_b)))
+
+    pogen    = lambdify([b,B, p_b, p_B, s],po)
+    dpodbani = lambdify([b,B, p_b, p_B, s],diff(po,s))
+    dpodBbar = lambdify([b,B, p_b, p_B, s],diff(po,B))
+    dpodpB   = lambdify([b,B, p_b, p_B, s],diff(po,p_B))
+    dpodpb   = lambdify([b,B, p_b, p_B, s],diff(po,p_b))
+
+    brms = np.sqrt(np.average(bani_f**2))
+    def integrator(fn, interval = 1e+2):
+        return np.array([quad(fn, -interval, interval, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+                points=[-interval*brms, interval*brms])[0] for i in range(len(kpc_r))])
+    po = integrator(pogen)
+
+    inte   = 1e+3
+    po_err = np.array([quad(pogen, -inte, inte, args=(Bbar_f[i], pb[i], pB[i], bani_f[i]),
+                points=[-inte*brms, inte*brms])[1] for i in range(len(kpc_r))]) 
+    po_err += np.sqrt((integrator(dpodbani,inte)*bani_err)**2 +(integrator(dpodBbar,inte)*Bbar_err)**2
+                    +(integrator(dpodpB,inte)*pB_err)**2+(integrator(dpodpb,inte)*err_pb)**2)
+    
+    
 
     po_new = np.array(mean_po)
     po_new_err = np.array(std_po)
-    return pB, po_new, pb, pB_err, po_new_err, err_pb # pb_err
+
+    # print(po/po_new)
+    # print(po_err/po_new_err)
+    return pB, po, pb, pB_err, po_err, err_pb # pb_err
 
 # plot rectangle given four coordinates
 def plot_rectangle(ax, x1, y1, x2, y2, color):
