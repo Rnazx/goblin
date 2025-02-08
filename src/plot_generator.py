@@ -654,11 +654,11 @@ if galaxy_name == 'm31':
 else:
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
             'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=frame_alpha_param, handletextpad=legend_labelspace, columnspacing=0.7)
-    if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
-            if switch['tau'] == 'taue':
-                plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
-            else:
-                plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
+    # if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
+    #         if switch['tau'] == 'taue':
+    #             plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
+    #         else:
+    #             plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
 
 plt.savefig(save_files_dir+r'\3 B')
 
@@ -667,7 +667,7 @@ plt.savefig(save_files_dir+r'\3 B')
 fig,ax = plt.subplots(nrows = 1, ncols = 1, figsize = (7, 5), tight_layout = True)
 ax.xaxis.set_ticks_position('both')
 ax.yaxis.set_ticks_position('both')
-pb_bool = True
+pb_bool = False
 # plotting model outputs
 if galaxy_name == 'm31':
     ax.plot(kpc_r, -180*pB/np.pi , c='r', linestyle='-', linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $-p_{\mathrm{reg}}$')
@@ -695,6 +695,7 @@ if pb_bool:
 
 percent_err_pB = (pB_err/pB)*100
 percent_err_po = (po_err/po)*100
+percent_err_pb = (pb_err/pb)*100
 
 # plotting observations
 if galaxy_name == 'm31':
@@ -789,11 +790,11 @@ ax.yaxis.set_ticks(np.arange(0, 100, 10))
 
 # legend specs
 axis_pars(ax)
-if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
-            if switch['tau'] == 'taue':
-                plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
-            else:
-                plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
+# if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
+#             if switch['tau'] == 'taue':
+#                 plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
+#             else:
+#                 plt.title(galaxy_name.upper()+r': $\tau = \mathrm{min}(\tau_\mathrm{e}, \tau_\mathrm{r})$', fontsize = title_textsize)
 
 if galaxy_name == 'm51':
     ax.legend(fontsize=lfs, frameon=frameon_param, handlelength=hd, ncol=1, bbox_to_anchor=(1,1),prop={
@@ -1114,13 +1115,94 @@ with open(save_files_dir+filename, 'w', newline='') as csvfile:
     csvwriter.writerows(rel_err_transpose)
 
 ##################################################################################################################
+# # saving percent errors to a csv file
+# filename = r'\percent_error_output.csv'
+
+# # quants=[h,l,u,cs,sig,Btot,Breg,Bord,pB_deg,po_deg,b,dkdc_f]
+# percent_err           = [kpc_r,percent_err_h,percent_err_l,percent_err_u,percent_err_cs,percent_err_sig,percent_err_Btot,percent_err_Breg,percent_err_Bord,percent_err_po,percent_err_pB,percent_err_alphak,percent_err_taue,percent_err_taur,percent_error_dkdc,percent_err_Mach,percent_err_gamma]
+# percent_err_transpose = list(zip(*percent_err))
+# column_names          = ['radius','h_err', 'l_err','u_err','cs_err','sig_err','Btot_err','Breg_err','Bord_err','po_err','pB_err','alphak_err','taue_err','taur_err','dkdc_err','mach_err','gamma_err']
+
+# # Writing to the file
+# with open(save_files_dir+filename, 'w', newline='') as csvfile:
+#     csvwriter = csv.writer(csvfile)
+#     csvwriter.writerow(column_names)
+#     csvwriter.writerows(percent_err_transpose)  
+# ##################################################################################################################
+
+# # saving quantities to a csv file
+# filename = r'\model_outputs.csv'
+
+# pB_deg           = 180*pB/np.pi
+# po_deg           = 180*po/np.pi
+# quants           = [kpc_r,h,l,u,cs,sig,Btot,Breg,Bord,po_deg,pB_deg,b,taue,taur,dkdc_f,Mach,gamma,e_folding]
+# quants_transpose = list(zip(*quants))
+# column_names     = ['radius','h', 'l','u','cs','sig','Btot','Breg','Bord','po','pB','alphak','taue_e','tau_r','dkdc','mach no','gamma','e_folding']
+
+# # Writing to the file
+# with open(save_files_dir+filename, 'w', newline='') as csvfile:
+#     csvwriter = csv.writer(csvfile)
+#     csvwriter.writerow(column_names)
+#     csvwriter.writerows(quants_transpose) 
+
+# ##################################################################################################################
+
+# filename = r'\magnetic_output.csv'
+# # find tan inverse pb_f
+# pb_f             = np.arctan(pb)
+# # convert to degrees
+# pb_deg           = 180*pb_f/np.pi
+# pb_err           = 180*pb_err/np.pi
+# pB_err           = 180*pB_err/np.pi
+# po_err           = 180*po_err/np.pi
+
+# # convert to microGauss
+# biso_f             = biso_f*1e+6
+# biso_err           = biso_err*1e+6
+# bani_f             = bani_f*1e+6
+# bani_err           = bani_err*1e+6
+# Bbar_f             = Bbar_f*1e+6
+# Bbar_err           = Bbar_err*1e+6
+# mag_quants         = [kpc_r, biso_f, biso_err, bani_f, bani_err, Bbar_f, Bbar_err, pb_deg, pb_err, po_deg, po_err, pB_deg, pB_err]
+# mag_column_names   = ['radius','b_iso', 'err_b_iso', 'b_ani', 'err_b_ani', 'B_bar', 'err_B_bar', 'pb', 'err_pb', 'po', 'err_po', 'pB', 'err_pB']
+
+# # Writing to the file
+# with open(save_files_dir+filename, 'w', newline='') as csvfile:
+#     csvwriter = csv.writer(csvfile)
+#     csvwriter.writerow(mag_column_names)
+#     csvwriter.writerows(list(zip(*mag_quants)))
+# ##################################################################################################################
+
+# saving all relative errors to a csv file
+filename = r'\error_output.csv'
+
+Btot_err             = G_scal_Bbartot_err*1e+6
+Breg_err             = G_scal_Bbarreg_err*1e+6
+Bord_err             = G_scal_Bbarord_err*1e+6
+err_po               = 180*po_err/np.pi
+err_pB               = -1*180*pB_err/np.pi
+err_pb               = 180*pb_err/np.pi
+alpha_err_corr_units = (alphak_err/cm_km)
+
+plotted_quant_err    = [kpc_r,h_err_corr_units,l_err_corr_units,err_u,err_cs,err_tot,Btot_err,Breg_err,Bord_err,err_po,err_pB,err_pb,alpha_err_corr_units,taue_err_c,taur_err_c,dkdc_err,Mach_err,err_gamma]
+rel_err_transpose    = list(zip(*plotted_quant_err))
+column_names         = ['radius','h_err', 'l_err', 'u_err', 'cs_err', 'sig_err','Btot_err','Breg_err','Bord_err','po_err','pB_err','pani_err','alphak_err','taue_err','taur_err','dkdc_err','mach_err','gamma_err']
+
+# Writing to the file
+# with open(save_files_dir_err+filename, 'w', newline='') as csvfile:
+with open(save_files_dir+filename, 'w', newline='') as csvfile:
+    csvwriter = csv.writer(csvfile)
+    csvwriter.writerow(column_names)
+    csvwriter.writerows(rel_err_transpose)
+
+##################################################################################################################
 # saving percent errors to a csv file
 filename = r'\percent_error_output.csv'
 
 # quants=[h,l,u,cs,sig,Btot,Breg,Bord,pB_deg,po_deg,b,dkdc_f]
-percent_err           = [kpc_r,percent_err_h,percent_err_l,percent_err_u,percent_err_cs,percent_err_sig,percent_err_Btot,percent_err_Breg,percent_err_Bord,percent_err_po,percent_err_pB,percent_err_alphak,percent_err_taue,percent_err_taur,percent_error_dkdc,percent_err_Mach,percent_err_gamma]
+percent_err           = [kpc_r,percent_err_h,percent_err_l,percent_err_u,percent_err_cs,percent_err_sig,percent_err_Btot,percent_err_Breg,percent_err_Bord,percent_err_po,percent_err_pB,percent_err_pb,percent_err_alphak,percent_err_taue,percent_err_taur,percent_error_dkdc,percent_err_Mach,percent_err_gamma]
 percent_err_transpose = list(zip(*percent_err))
-column_names          = ['radius','h_err', 'l_err','u_err','cs_err','sig_err','Btot_err','Breg_err','Bord_err','po_err','pB_err','alphak_err','taue_err','taur_err','dkdc_err','mach_err','gamma_err']
+column_names          = ['radius','h_err', 'l_err','u_err','cs_err','sig_err','Btot_err','Breg_err','Bord_err','po_err','pB_err','pani_err','alphak_err','taue_err','taur_err','dkdc_err','mach_err','gamma_err']
 
 # Writing to the file
 with open(save_files_dir+filename, 'w', newline='') as csvfile:
@@ -1134,9 +1216,10 @@ filename = r'\model_outputs.csv'
 
 pB_deg           = 180*pB/np.pi
 po_deg           = 180*po/np.pi
-quants           = [kpc_r,h,l,u,cs,sig,Btot,Breg,Bord,po_deg,pB_deg,b,taue,taur,dkdc_f,Mach,gamma,e_folding]
+pb_deg           = 180*pb/np.pi
+quants           = [kpc_r,h,l,u,cs,sig,Btot,Breg,Bord,po_deg,pB_deg,pb_deg,b,taue,taur,dkdc_f,Mach,gamma,e_folding]
 quants_transpose = list(zip(*quants))
-column_names     = ['radius','h', 'l','u','cs','sig','Btot','Breg','Bord','po','pB','alphak','taue_e','tau_r','dkdc','mach no','gamma','e_folding']
+column_names     = ['radius','h', 'l','u','cs','sig','Btot','Breg','Bord','po','pB','pani','alphak','taue_e','tau_r','dkdc','mach no','gamma','e_folding']
 
 # Writing to the file
 with open(save_files_dir+filename, 'w', newline='') as csvfile:
@@ -1163,7 +1246,7 @@ bani_err           = bani_err*1e+6
 Bbar_f             = Bbar_f*1e+6
 Bbar_err           = Bbar_err*1e+6
 mag_quants         = [kpc_r, biso_f, biso_err, bani_f, bani_err, Bbar_f, Bbar_err, pb_deg, pb_err, po_deg, po_err, pB_deg, pB_err]
-mag_column_names   = ['radius','b_iso', 'err_b_iso', 'b_ani', 'err_b_ani', 'B_bar', 'err_B_bar', 'pb', 'err_pb', 'po', 'err_po', 'pB', 'err_pB']
+mag_column_names   = ['radius','b_iso', 'err_b_iso', 'b_ani', 'err_b_ani', 'B_bar', 'err_B_bar', 'pani', 'err_pani', 'po', 'err_po', 'pB', 'err_pB']
 
 # Writing to the file
 with open(save_files_dir+filename, 'w', newline='') as csvfile:

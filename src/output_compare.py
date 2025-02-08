@@ -56,10 +56,19 @@ galaxy_name = os.environ.get('galaxy_name')
 #     magnetic field ratios vs radius and r/r25 (bord to btot)
 #     magnetic field ratios vs radius and r/r25 (bord to breg)
 # 8: plot taue/taur vs r and r/r25
-# 9: plot omega*tau vs r and r/r25
 
-func_number = 9 # change this to choose what to plot
-print('Function number:', func_number)
+# create a dictionary to store the function number and the corresponding function name
+func_dict = {1: 'observables against observables',
+             2: 'observable vs radius',
+             3: 'B_iso vs B_ord plot',
+             4: 'scale_length calculation for B strength plots',
+             5: 'outputs vs r and r/r25',
+             6: 'outputs vs outputs',
+             7: 'miscellaneous magnetic outputs plots',
+             8: 'plot taue/taur vs r and r/r25'}
+
+func_number = 5 # change this to choose what to plot
+ic(func_dict[func_number])
 
 # going to supplementary_data folder where files are stored
 new_dir_supp_data = os.path.join(base_path, 'results')
@@ -211,6 +220,10 @@ galaxies = ['m31', 'm33', 'm51', 'ngc6946']
 # color map for each galaxy
 color_map = {'m31': 'blue', 'm33': 'green', 'm51': 'red', 'ngc6946': 'purple'}
 
+# params_dict = {'m31':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414},
+#                'm33':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
+#                'm51':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}, 
+#                'ngc6946': {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 30.0, 'psi': 1.0, 'ca': 4.0, 'beta': 8.0, 'A': 1.414}}
 params_dict = {'m31':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414},
                'm33':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 10.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414}, 
                'm51':     {'moldat': 'No', 'tau':'taue', 'ks':'N', 'u':'datamaker', 'h':'root_find', 'z': 15.0, 'psi': 1.0, 'ca': 6.0, 'beta': 7.0, 'A': 1.414}, 
@@ -223,7 +236,12 @@ for galaxy in galaxies:
     # go to specific folder based on params of each galaxy and today's date
     # folder name format: 2024-06-30,moldat_No,taue,z_15.0,psi_2.0,ca_4.0,beta_8.0,A_1.414
 
-    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2024-10-30,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+    # os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(today, params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+    #                                                                     params_dict[galaxy]['u'], params_dict[galaxy]['h'],
+    #                                                                     params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
+    #                                                                     params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
+    #                                                                     params_dict[galaxy]['A']))
+    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-08,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
                                                                         params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
@@ -241,11 +259,15 @@ for galaxy in galaxies:
 
     # do the same for M31Alt results
     if galaxy == 'm31':
-        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2024-10-30,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+        # os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\{},moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(today, params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+        #                                                                 params_dict[galaxy]['u'], params_dict[galaxy]['h'],
+        #                                                                 params_dict[galaxy]['z'], params_dict[galaxy]['ca'], 
+        #                                                                 params_dict[galaxy]['beta'], params_dict[galaxy]['A']))
+        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-08,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['ca'], 
                                                                         params_dict[galaxy]['beta'], params_dict[galaxy]['A']))
-    
+        
         # loading the model outputs to df
         data_M31Alt     = open_csv_file('model_outputs')
         data_err_M31Alt = open_csv_file('error_output')
@@ -296,11 +318,11 @@ ip_data_cols     = list(m31_obs.columns)
 
 # units for the quantities
 units_for_axis   = ['(kpc)', '(kpc)', '(kpc)', '(km/s)', '(km/s)', '(km/s)', r'($\mu$G)', r'($\mu$G)', r'($\mu$G)', 
-                   '(degree)', '(degree)', '(km/s)', '(Myr)', '(Myr)', ' ', ' ', r'(Gyr$^{-1}$)', '(Gyr)']
+                   '(degree)', '(degree)', '(degree)', '(km/s)', '(Myr)', '(Myr)', ' ', ' ', r'(Gyr$^{-1}$)', '(Gyr)']
 quants_for_title = ['Radius', 'Scale height', 'Correlation length', 'Turbulent speed', 'Sound speed', 'Total speed', 'Total B', 'Regular B', 'Ordered B',
-                   'Ordered pitch angle', 'Mean-field pitch angle', r'$\alpha_\mathrm{k}$', 'Eddy-turnover time', 'Renovation time', r'$\mathrm{D}/\mathrm{D}_{\mathrm{c}}$', 'Mach number', 'Local growth rate', 'Local e-folding time']
+                   'Ordered pitch angle', 'Mean-field pitch angle', 'Anisotropic pitch angle', r'$\alpha_\mathrm{k}$', 'Eddy-turnover time', 'Renovation time', r'$\mathrm{D}/\mathrm{D}_{\mathrm{c}}$', 'Mach number', 'Local growth rate', 'Local e-folding time']
 symbols_for_axis = [r'$r$', r'$h$', r'$l$', r'$u$', r'$c_\mathrm{s}$', r'$w$', r'$B_{\mathrm{tot}}$', r'$B_{\mathrm{reg}}$', r'$B_{\mathrm{ord}}$', 
-                    r'$p_\mathrm{ord}$', r'$p_\mathrm{reg}$',  r'$\alpha_\mathrm{k}$', r'$\tau_\mathrm{e}$', r'$\tau_\mathrm{r}$', r'$\mathrm{D}/\mathrm{D}_{\mathrm{c}}$', r'$\mathcal{M} = u/c_\mathrm{s}$', r'$\gamma$', r'$\frac{1}{\gamma}$']
+                    r'$p_\mathrm{ord}$', r'$p_\mathrm{reg}$', r'$p_\mathrm{b}$',  r'$\alpha_\mathrm{k}$', r'$\tau_\mathrm{e}$', r'$\tau_\mathrm{r}$', r'$\mathrm{D}/\mathrm{D}_{\mathrm{c}}$', r'$\mathcal{M} = u/c_\mathrm{s}$', r'$\gamma$', r'$\frac{1}{\gamma}$']
 
 # units for observables
 units_for_obs        = ['(kpc)', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', r'$(\mathrm{g}/\mathrm{cm}^2)$', ' ', '(1/s)', r'$(\mathrm{g}/\mathrm{s} \mathrm{ cm}^2)$', '(K)']
@@ -448,7 +470,7 @@ if func_number == 2:
 
     # remove sigma_H2 from ip_data_cols
     ip_data_cols_short = [col for col in ip_data_cols if col != 'sigma_H2']
-    ic(ip_data_cols_short)
+    # ic(ip_data_cols_short)
     #remove 3rd element from symbols_for_axis_obs
     del symbols_for_axis_obs[3]
     # ic(symbols_for_axis_obs)
@@ -724,15 +746,12 @@ if func_number == 4:
                     ngc6946_data = galaxy_data[galaxy] 
 
                     if i == 6: # B_tot scale length in Beck+07 is calculated for r>3 kpc and r = 9 kpc is the extend of plots. so we use this range for B_tot
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] > 4.2]
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] < 21.0]
+                        ngc6946_data = ngc6946_data[(ngc6946_data['radius'] > 4.2) & (ngc6946_data['radius'] < 21.0)]
                     elif i  == 8: # B_ord scale length in Beck+07 is calculated for r>6 kpc and r = 9 kpc is the extend of plots. so we use this range for B_ord 
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] > 8.4]
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] < 21.0]
+                        ngc6946_data = ngc6946_data[(ngc6946_data['radius'] > 8.4) & (ngc6946_data['radius'] < 21.0)]
                     else:
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] > 4.2]
-                        ngc6946_data = ngc6946_data[ngc6946_data['radius'] < 21.0]
- 
+                        ngc6946_data = ngc6946_data[(ngc6946_data['radius'] > 4.2) & (ngc6946_data['radius'] < 21.0)]
+                        
                     # get the column with index i
                     ngc6946_mag = ngc6946_data[quantities[i]]
                     # take log base e 
@@ -750,7 +769,7 @@ if func_number == 4:
                     r0_beck           = (-np.log10(np.e)/np.array(slope_beck))
                     err_r0_beck       = np.sqrt((r0_beck*slope_beck_stderr/slope_beck)**2)
 
-                    print('slope, r0_beck, err_r0_beck:', i, ' ,', slope_beck, ' ,', r0_beck, ' ,', err_r0_beck)
+                    # print('comparison with beck+07: slope, r0_beck, err_r0_beck:', i, ' ,', slope_beck, ' ,', r0_beck, ' ,', err_r0_beck)
             
                 # Access the slope, intercept, and standard error of the slope
                 slope        = result.slope
@@ -899,6 +918,8 @@ if func_number == 4:
         csvwriter.writerows(err_slope_lists_n)
 
 if func_number == 5:
+    # ic(quantities)
+    # ic(quantities_err)
     # plot outputs vs r and r/r25 
     for i in range(1,len(quantities)): 
         plt.figure(figsize=(5, 5))
@@ -911,24 +932,41 @@ if func_number == 5:
         for galaxy in galaxies:
             
             if i == 1: # add legend only for first panel
+                # ic(i, quantities[i], quantities_err[i])
                 if galaxy == 'ngc6946':
                     plt.plot(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], color=color_map[galaxy],marker='.', linewidth=lw, label='NGC 6946')
                 elif galaxy == 'm31': # plot M31Alt
                     plt.plot(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], color=color_map[galaxy], marker='.', linewidth=lw, label=galaxy.upper())
                     plt.plot(galaxy_data['M31Alt']['radius'], galaxy_data['M31Alt'][quantities[i]], color='cyan', marker='.', linewidth=lw, label='M31Alt')
-
                 else:
                     plt.plot(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], color=color_map[galaxy],marker='.', linewidth=lw, label=galaxy.upper())
                 
                 plt.legend(fontsize=lfs, frameon=False, handlelength=hd, ncol=1, loc = 'upper left', prop={
                 'size': leg_textsize,  'family': 'Times New Roman'}, fancybox=True, framealpha=0.9, handletextpad=legend_labelspace, columnspacing=0.7)
             
+            elif i in [9,10,11]:
+                # ic(i, quantities[i], quantities_err[i])
+
+                modulus_angle = np.abs(galaxy_data[galaxy][quantities[i]])
+                plt.plot(galaxy_data[galaxy]['radius'], modulus_angle, color=color_map[galaxy],marker='.', linewidth=lw, label=galaxy.upper())
+
             else:
+                # ic(i, quantities[i], quantities_err[i])
                 plt.plot(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], color=color_map[galaxy],marker='.', linewidth=lw)
                 if galaxy == 'm31': # plot M31Alt
                     plt.plot(galaxy_data['M31Alt']['radius'], galaxy_data['M31Alt'][quantities[i]], color='cyan', marker='.', linewidth=lw)
-                
-            fill_between_err(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i]], color_map[galaxy], 0.3)
+
+            if i in [9,10,11]: # pitch angles
+                # if i == 10:
+                    # ic(i, quantities[i], quantities_err[i])
+                    # ic(galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i]])
+
+                modulus_angle_err = np.abs(galaxy_data_err[galaxy][quantities_err[i]])
+                fill_between_err(galaxy_data[galaxy]['radius'], modulus_angle, modulus_angle_err, color_map[galaxy], 0.3)
+            else:
+
+                fill_between_err(galaxy_data[galaxy]['radius'], galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i]], color_map[galaxy], 0.3)
+            
             if galaxy == 'm31':
                 fill_between_err(galaxy_data['M31Alt']['radius'], galaxy_data['M31Alt'][quantities[i]], galaxy_data_err['M31Alt'][quantities_err[i]], 'cyan', 0.3)
 
@@ -937,12 +975,11 @@ if func_number == 5:
 
             # plt.ylabel(y_label, fontsize=fs, labelpad=1)
             plt.xticks(np.arange(0, 21, 4)) #for ngc
-
             # log axis for some plots
-            if i in [6,7,8,11,12,13,14,16]:
+            if i in [6,7,8,12,13,14,15,17]:
                 plt.yscale('log')
 
-            plt.rcParams['axes.titley'] = 1.0    # y is in axes-relative coordinates.
+            plt.rcParams['axes.titley']   = 1.0    # y is in axes-relative coordinates.
             plt.rcParams['axes.titlepad'] = -25  # pad is in points...
             # Switch on major and minor ticks on y axis
             plt.tick_params(width=tick_width)
@@ -958,15 +995,15 @@ if func_number == 5:
             plt.subplots_adjust(top    = 0.95)  # Adjust this value as needed to reduce the upper margin
             plt.subplots_adjust(bottom = 0.15)  # Adjust this value as needed to reduce the upper margin
 
-            if i in [9,10,14,16,17]:
+            if i in [9,10,11,18]:
                 plt.xlabel('Radius (kpc)', fontsize = fs+2, labelpad = 1) # labelpad change gap between axis and axis title
 
             # e-folding time
-            if i == 17:
-                plt.ylim(top=10)
+            if i == 18:
+                plt.ylim(top=15)
 
             # gamma
-            if i == 16:
+            if i == 17:
                 # set y limit at 40
                 plt.ylim(top=40, bottom = 0.1)
                 ticks = [1, 5, 10, 20, 30, 45]
@@ -974,12 +1011,12 @@ if func_number == 5:
                 plt.gca().get_yaxis().set_major_formatter(plt.FuncFormatter(lambda y,_:f'{int(y)}'))
             
             # Mach no
-            if i == 15:
+            if i == 16:
                 plt.ylim(bottom = 0, top=4)
 
             # dkdc
-            if i == 14:
-                plt.ylim(top = 100, bottom=1)
+            if i == 15:
+                plt.ylim(top = 200, bottom=1)
 
             # Field strengths
             if i in [6,7,8]:
@@ -997,18 +1034,20 @@ if func_number == 5:
 
             # pitch angles
             if i in [9]:
-                plt.ylim(bottom=0,top=40)
+                plt.ylim(bottom=0,top=20)
             if i in [10]:
+                plt.ylim(bottom=0,top=20)
+            if i in [11]:
                 plt.ylim(bottom=0,top=20)
 
             # tau_e and tau_r
-            if i in [12,13]:
+            if i in [13,14]:
                 plt.ylim(bottom=0.05, top=400)
             
-            if i in [1, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16]:
+            if i in [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17]:
                 plt.text(x=0.7, y=1.1, s=title, fontsize=title_textsize, fontweight='normal',ha='right', va='top', transform=ax.transAxes, 
                         bbox=dict(facecolor='none', edgecolor='black', boxstyle='square,pad=0.1'))
-            elif i in [6, 9, 13]:
+            elif i in [6, 14]:
                 plt.text(x=0.7, y=0.18, s=title, fontsize=title_textsize, fontweight='normal',ha='right', va='top', transform=ax.transAxes, 
                         bbox=dict(facecolor='none', edgecolor='black', boxstyle='square,pad=0.1'))
             else:
@@ -1044,14 +1083,20 @@ if func_number == 5:
                 
                 plt.legend(fontsize=lfs, frameon=False, handlelength=hd, ncol=1, loc = 'upper left', prop={
                 'size': leg_textsize,  'family': 'Times New Roman'}, fancybox=True, framealpha=0.9, handletextpad=legend_labelspace, columnspacing=0.7)
-            
+            elif i in [9,10,11]:
+                modulus_angle = np.abs(galaxy_data[galaxy][quantities[i]])
+                plt.plot(r_r25, modulus_angle, color=color_map[galaxy],marker='.', linewidth=lw, label=galaxy.upper())
+
             else:
                 plt.plot(r_r25, galaxy_data[galaxy][quantities[i]],color_map[galaxy], marker='o', linewidth=lw)
                 if galaxy == 'm31': # plot M31Alt
                     plt.plot(r_r25, galaxy_data['M31Alt'][quantities[i]], color='cyan', marker='.', linewidth=lw)
                 
-
-            fill_between_err(r_r25, galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i]], color_map[galaxy], 0.3)
+            if i in [9,10,11]:
+                modulus_angle_err = np.abs(galaxy_data_err[galaxy][quantities_err[i]])
+                fill_between_err(r_r25, modulus_angle, modulus_angle_err, color_map[galaxy], 0.3)
+            else:
+                fill_between_err(r_r25, galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i]], color_map[galaxy], 0.3)
             if galaxy == 'm31':
                 fill_between_err(r_r25, galaxy_data['M31Alt'][quantities[i]], galaxy_data_err['M31Alt'][quantities_err[i]], 'cyan', 0.3)
 
@@ -1063,10 +1108,10 @@ if func_number == 5:
             plt.xticks(np.arange(0, 2, 0.5)) 
 
             # log axis for some plots
-            if i in [6,7,8,11,12,13,14,16]:
+            if i in [6,7,8,12,13,14,15,17]:
                 plt.yscale('log')
 
-            plt.rcParams['axes.titley'] = 1.0    # y is in axes-relative coordinates.
+            plt.rcParams['axes.titley']   = 1.0    # y is in axes-relative coordinates.
             plt.rcParams['axes.titlepad'] = -25  # pad is in points...
             plt.tick_params(width=tick_width)
             # Switch on major and minor ticks on y axis
@@ -1080,27 +1125,27 @@ if func_number == 5:
             plt.subplots_adjust(top    = 0.95)  # Adjust this value as needed to reduce the upper margin
             plt.subplots_adjust(bottom = 0.15)  # Adjust this value as needed to reduce the upper margin
 
-            if i in [9,10,14,16,17]:
+            if i in [9,10,11,18]:
                 plt.xlabel(r'$r/r_{25}$', fontsize=fs+2, labelpad=1)
 
             plt.tick_params(axis='y', which='both', right=True, labelright=False)
 
             # e-folding time
-            if i == 17:
-                plt.ylim(top=7)
+            if i == 18:
+                plt.ylim(top=15)
                 
             # gamma
-            if i == 16:
+            if i == 17:
                 # set y limit at 40
                 plt.ylim(top=40 , bottom = 0.1)
 
             # Mach no
-            if i == 15:
+            if i == 16:
                 plt.ylim(bottom = 0, top=4)
 
             # dkdc
-            if i == 14:
-                plt.ylim(top = 65, bottom=1)
+            if i == 15:
+                plt.ylim(top = 200, bottom=1)
 
             # Field strengths
             if i in [6,7,8]:
@@ -1118,18 +1163,20 @@ if func_number == 5:
 
             # pitch angles
             if i in [9]:
-                plt.ylim(bottom=0,top=40)
+                plt.ylim(bottom=0,top=20)
             if i in [10]:
+                plt.ylim(bottom=0,top=20)
+            if i in [11]:
                 plt.ylim(bottom=0,top=20)
 
             # tau_e and tau_r
-            if i in [12,13]:
+            if i in [13,14]:
                 plt.ylim(bottom=0.1, top=400)
 
-            if i in [1, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16]:
+            if i in [1, 3, 4, 5, 7, 8, 9, 10, 11, 12, 15, 16, 17]:
                 plt.text(x=0.7, y=1.1, s=title, fontsize=title_textsize, fontweight='normal',ha='right', va='top', transform=ax.transAxes, 
                         bbox=dict(facecolor='none', edgecolor='black', boxstyle='square,pad=0.1'))
-            elif i in [6, 9, 13]:
+            elif i in [6, 14]:
                 plt.text(x=0.7, y=0.18, s=title, fontsize=title_textsize, fontweight='normal',ha='right', va='top', transform=ax.transAxes, 
                         bbox=dict(facecolor='none', edgecolor='black', boxstyle='square,pad=0.1'))
             else:
@@ -1252,28 +1299,28 @@ if func_number == 7:
     bord_btot_ngc6946_beck = G_dat_Bord_ngc6946/G_dat_Btot_ngc6946
 
     # for all galaxies, get ratio of bord to breg using imported data
-    bord_breg_m31_beck = G_dat_Bord_m31/G_dat_Breg_m31
-    bord_breg_m33_beck = G_dat_Bord_m33/G_dat_Breg_m33
-    bord_breg_m51_beck = G_dat_Bord_m51/G_dat_Breg_m51
+    bord_breg_m31_beck     = G_dat_Bord_m31/G_dat_Breg_m31
+    bord_breg_m33_beck     = G_dat_Bord_m33/G_dat_Breg_m33
+    bord_breg_m51_beck     = G_dat_Bord_m51/G_dat_Breg_m51
     bord_breg_ngc6946_beck = G_dat_Bord_ngc6946/G_dat_Breg_ngc6946
 
     # for all galaxies, get ratio of breg to btot
-    breg_btot_m31 = m31_df['Breg']/m31_df['Btot']
-    breg_btot_m33 = m33_df['Breg']/m33_df['Btot']
-    breg_btot_m51 = m51_df['Breg']/m51_df['Btot']
+    breg_btot_m31     = m31_df['Breg']/m31_df['Btot']
+    breg_btot_m33     = m33_df['Breg']/m33_df['Btot']
+    breg_btot_m51     = m51_df['Breg']/m51_df['Btot']
     breg_btot_ngc6946 = ngc6946_df['Breg']/ngc6946_df['Btot']
 
     # plot these ratios in a single plot and save in the miscellaneous folder
     plt.figure(figsize=(11, 6))
-    plt.plot(m31_df['radius'], breg_btot_m31, color_map['m31'], marker='o', linewidth=lw, label='M31')
-    plt.plot(m33_df['radius'], breg_btot_m33, color_map['m33'], marker='o', linewidth=lw, label='M33')
-    plt.plot(m51_df['radius'], breg_btot_m51, color_map['m51'], marker='o', linewidth=lw, label='M51')
+    plt.plot(m31_df['radius'],     breg_btot_m31, color_map['m31'], marker='o', linewidth=lw, label='M31')
+    plt.plot(m33_df['radius'],     breg_btot_m33, color_map['m33'], marker='o', linewidth=lw, label='M33')
+    plt.plot(m51_df['radius'],     breg_btot_m51, color_map['m51'], marker='o', linewidth=lw, label='M51')
     plt.plot(ngc6946_df['radius'], breg_btot_ngc6946, color_map['ngc6946'], marker='o', linewidth=lw, label='NGC6946')
 
     # plot ratios against radius
-    plt.plot(mrange_m31, breg_btot_m31_beck, color_map['m31'], marker='*', markersize = m, linestyle=' ')#, label='M31 (Beck+19)')
-    plt.plot(mrange_m33, breg_btot_m33_beck, color_map['m33'], marker='D', markersize = m, linestyle=' ')#, label='M33 (Beck+19)')
-    plt.plot(mrange_m51, breg_btot_m51_beck, color_map['m51'], marker='p', markersize = m, linestyle=' ')#, label='M51 (Beck+19)')
+    plt.plot(mrange_m31,     breg_btot_m31_beck, color_map['m31'], marker='*', markersize = m, linestyle=' ')#, label='M31 (Beck+19)')
+    plt.plot(mrange_m33,     breg_btot_m33_beck, color_map['m33'], marker='D', markersize = m, linestyle=' ')#, label='M33 (Beck+19)')
+    plt.plot(mrange_m51,     breg_btot_m51_beck, color_map['m51'], marker='p', markersize = m, linestyle=' ')#, label='M51 (Beck+19)')
     plt.plot(mrange_ngc6946, breg_btot_ngc6946_beck, color_map['ngc6946'], marker='s', markersize = m, linestyle=' ')#, label='NGC6946 (Beck+19)')
 
     plt.xlabel('Radius (kpc)', fontsize=fs)
