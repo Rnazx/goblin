@@ -67,7 +67,7 @@ func_dict = {1: 'observables against observables',
              7: 'miscellaneous magnetic outputs plots',
              8: 'plot taue/taur vs r and r/r25'}
 
-func_number = 5 # change this to choose what to plot
+func_number = 8 # change this to choose what to plot
 ic(func_dict[func_number])
 
 # going to supplementary_data folder where files are stored
@@ -241,7 +241,7 @@ for galaxy in galaxies:
     #                                                                     params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
     #                                                                     params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
     #                                                                     params_dict[galaxy]['A']))
-    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-08,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-18,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
                                                                         params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
@@ -263,7 +263,7 @@ for galaxy in galaxies:
         #                                                                 params_dict[galaxy]['u'], params_dict[galaxy]['h'],
         #                                                                 params_dict[galaxy]['z'], params_dict[galaxy]['ca'], 
         #                                                                 params_dict[galaxy]['beta'], params_dict[galaxy]['A']))
-        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-08,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-18,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['ca'], 
                                                                         params_dict[galaxy]['beta'], params_dict[galaxy]['A']))
@@ -1191,36 +1191,40 @@ if func_number == 5:
 
 if func_number == 6:
     # outputs plotted against each other
-    for j in range(1,len(quantities)-1):
-        for i in range(1,len(quantities)-1):
-            plt.figure(figsize=(11, 6))
+    for j in range(1, len(quantities) - 1):
+        for i in range(1, len(quantities) - 1):
             if i != j:
+                fig, ax = plt.subplots(figsize=(11, 6))  # Create one figure with multiple subplots
                 for galaxy in galaxies:
-                    plt.plot(galaxy_data[galaxy][quantities[j]], galaxy_data[galaxy][quantities[i]],color_map[galaxy], marker='o', linewidth=lw, label=galaxy.upper())
-                    # fill_between_err(galaxy_obs[galaxy].iloc[:,j], galaxy_data[galaxy][quantities[i]], galaxy_data_err[galaxy][quantities_err[i-1]], color_map[galaxy], 0.3)
-                    title   = quants_for_title[i] + ' vs '+ quants_for_title[j] # y vs x
-                    x_label = symbols_for_axis[j] + ' ' + units_for_axis[j]
-                    y_label = symbols_for_axis[i] + ' ' + units_for_axis[i]
-
-                    plt.xlabel(x_label, fontsize=fs)
-                    plt.ylabel(y_label, fontsize=fs)
-
-                    plt.tick_params(width=tick_width)
-                    plt.minorticks_on()
+                    ax.plot(galaxy_data[galaxy][quantities[j]], galaxy_data[galaxy][quantities[i]],
+                            color_map[galaxy], marker='o', linewidth=lw, label=galaxy.upper())
+                    # fill_between_err(galaxy_obs[galaxy].iloc[:, j], galaxy_data[galaxy][quantities[i]],
+                    #                   galaxy_data_err[galaxy][quantities_err[i - 1]], color_map[galaxy], 0.3)
                     
-                    plt.title(title, fontsize=title_textsize, weight='bold')
-                    plt.legend(fontsize=lfs, frameon=False, handlelength=hd, ncol=1, prop={
-                        'size': leg_textsize,  'family': 'Times New Roman'}, fancybox=True, framealpha=0.9, handletextpad=legend_labelspace, columnspacing=0.7)
-                    os.chdir(plot_save_dir+'\output_vs_output')
+                title = quants_for_title[i] + ' vs ' + quants_for_title[j]  # y vs x
+                x_label = symbols_for_axis[j] + ' ' + units_for_axis[j]
+                y_label = symbols_for_axis[i] + ' ' + units_for_axis[i]
 
-                    # make a folder for each output quantity
-                    os.makedirs('{}'.format(quantities[j]), exist_ok=True)
-                    os.chdir('{}'.format(quantities[j]))
-                    plt.savefig('{}_vs_{}'.format(quantities[i],quantities[j]))
-                    
-                    os.chdir('..')
-                    os.chdir('..')
-                plt.close()
+                ax.set_xlabel(x_label, fontsize=fs)
+                ax.set_ylabel(y_label, fontsize=fs)
+                ax.tick_params(width=tick_width)
+                ax.minorticks_on()
+
+                ax.set_title(title, fontsize=title_textsize, weight='bold')
+                ax.legend(fontsize=lfs, frameon=False, handlelength=hd, ncol=1, prop={
+                    'size': leg_textsize, 'family': 'Times New Roman'}, fancybox=True, framealpha=0.9,
+                          handletextpad=legend_labelspace, columnspacing=0.7)
+
+                # Create a directory and save the plot
+                os.chdir(plot_save_dir + '\\output_vs_output')
+
+                os.makedirs('{}'.format(quantities[j]), exist_ok=True)
+                os.chdir('{}'.format(quantities[j]))
+                plt.savefig('{}_vs_{}'.format(quantities[i], quantities[j]))
+                plt.close(fig)  # Close the figure right after saving to free memory
+
+                os.chdir('..')
+                os.chdir('..')
 
 if func_number == 7:
     # get all variables from mag_data_gal_combined.py

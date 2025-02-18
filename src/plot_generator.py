@@ -789,7 +789,7 @@ ax.set_ylim(bottom=0)
 ax.yaxis.set_ticks(np.arange(0, 100, 10))
 
 # legend specs
-axis_pars(ax)
+# axis_pars(ax)
 # if galaxy_name == 'm51' or galaxy_name == 'ngc6946':
 #             if switch['tau'] == 'taue':
 #                 plt.title(galaxy_name.upper()+r': $\tau = \tau_\mathrm{e}$', fontsize = title_textsize)
