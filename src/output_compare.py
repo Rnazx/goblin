@@ -58,7 +58,7 @@ galaxy_name = os.environ.get('galaxy_name')
 # 8: plot taue/taur vs r and r/r25
 # 9: plot omega*tau vs r and r/r25
 
-func_number = 9 # change this to choose what to plot
+func_number = 6 # change this to choose what to plot
 print('Function number:', func_number)
 
 # going to supplementary_data folder where files are stored
@@ -223,7 +223,7 @@ for galaxy in galaxies:
     # go to specific folder based on params of each galaxy and today's date
     # folder name format: 2024-06-30,moldat_No,taue,z_15.0,psi_2.0,ca_4.0,beta_8.0,A_1.414
 
-    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2024-10-30,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+    os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-07,moldat_{},{},KS_{},u_{},h_{},z_{},psi_{},ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['psi'], 
                                                                         params_dict[galaxy]['ca'], params_dict[galaxy]['beta'], 
@@ -241,7 +241,7 @@ for galaxy in galaxies:
 
     # do the same for M31Alt results
     if galaxy == 'm31':
-        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2024-10-30,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
+        os.chdir(new_dir_supp_data+'\{}'.format(galaxy)+r'\2025-02-18,moldat_{},{},KS_{},u_{},h_{},z_{},psi_2.0,ca_{},beta_{},A_{}'.format(params_dict[galaxy]['moldat'], params_dict[galaxy]['tau'], params_dict[galaxy]['ks'], 
                                                                         params_dict[galaxy]['u'], params_dict[galaxy]['h'],
                                                                         params_dict[galaxy]['z'], params_dict[galaxy]['ca'], 
                                                                         params_dict[galaxy]['beta'], params_dict[galaxy]['A']))
