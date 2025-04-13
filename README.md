@@ -1,5 +1,7 @@
 # goblin: Galactic magnetic fields from OBservervationaL INputs
 [![arXiv:2311.15612](http://img.shields.io/badge/arXiv-2502.13029-red.svg)](https://arxiv.org/abs/2502.13029)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15118869.svg)](https://doi.org/10.5281/zenodo.15118869)
+
 
 A generalised framework to estimate galactic magnetic fields using observational inputs.
 
