@@ -45,10 +45,9 @@ Based on the galaxy chosen in config.sh, the data for the observables correspond
 * The [turbulence_expressions.py](expressions/turbulence_expressions.py) script solves for the turbulence parameters in terms of the observables. Subsequently, the [magnetic_expressions.py](expressions/magnetic_expressions.py) script uses this solution to find the expressions for the magnetic field strengths and pitch angles.
 
 
-
 ### 3. Using the data in the solved expressions
 <p align="center">
-<img src = "https://github.com/Rnazx/goblin/assets/42196798/c2c965fc-29b2-457b-a151-89e1b0778403" width ="825" height = "450" alt = "interpolation" />
+<img src = "https://github.com/user-attachments/assets/04c157fb-b6d5-4261-97c5-12fdc62e6af6" width ="825" height = "450" alt = "interpolation" />
 
 <em align="center"> We solve for the turbulence and magnetic fields using the desired model. Five additional parameters are introduced. For the equations mentioned in this flowchart, kindly refer to the manuscript.</em>
 </p>
