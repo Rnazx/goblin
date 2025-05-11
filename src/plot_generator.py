@@ -247,6 +247,25 @@ h = h_f/cm_kpc #in kpc
 l = l_f/cm_kpc #in kpc
 # l = l_f/cm_kpc #in kpc
 
+# perform linear fit of h data with respect to kpc_r
+# also obtain error in slope and intercept
+coeffs_h = np.polyfit(kpc_r, h, 1, cov=True)
+# Unpack the tuple
+coeffs, cov_matrix = coeffs_h
+
+# coeffs[0] is the slope, coeffs[1] is the intercept
+slope = coeffs[0]
+intercept = coeffs[1]
+print('Slope:', slope)
+print('Intercept:', intercept)
+# Errors are the square roots of the diagonal elements of the covariance matrix
+slope_error = np.sqrt(cov_matrix[0, 0])
+intercept_error = np.sqrt(cov_matrix[1, 1])
+print('Slope error:', slope_error)
+print('Intercept error:', intercept_error)
+# calculate the fit line
+h_fit = slope * kpc_r + intercept
+
 # defining h data
 if galaxy_name == 'ngc6946':
     # defining data from Patra+20 for NGC 6946
@@ -265,7 +284,7 @@ dist_Mpc_paper2       = [0.78, 0.84, 8.5, 7.72]
 # convert arcmin to radius in kpc using distance to these galaxies
 r_25_kpc_paper2       = [r*dist_Mpc_paper2[i]*1000/(arcmin_deg*deg_rad) for i,r in enumerate(r_25_arcmin_paper2)]
 
-# plotting data
+# plotting model output
 if galaxy_name == 'm31':
     # plotting model output
     ax.plot(kpc_r, h, c='b', marker='o', markersize=4, mfc='k',mec='k',linestyle='-', linewidth=lw, label=r' Scale height')
@@ -275,6 +294,8 @@ if galaxy_name == 'm31':
     h_scaled = 0.18*np.exp(kpc_r/((10/16)*r_25_kpc_paper2[0])) # in kpc
     ax.plot(kpc_r, h_scaled, zorder=2,linestyle='-',marker=' ',c='r',mfc='b',mec='k',mew=1, linewidth=1, markersize = 13, label=r' Milky Way scaling for $h$')
 
+    # plot the fit of h data with respect to kpc_r
+    ax.plot(kpc_r, h_fit, linestyle='--', color='b', label=r' Slope = {:.2f}'.format(slope))
 else: # since no legend needed for m33, m51 and ngc6946
     # plotting model output
     ax.plot(kpc_r, h, c='b', marker='o', markersize=4, mfc='k',mec='k',linestyle='-', linewidth=lw)
@@ -291,7 +312,8 @@ else: # since no legend needed for m33, m51 and ngc6946
         # plot Bacchini+19 data
         ax.plot(kpc_r, dat_h_bacchini, zorder=2,linestyle=':',marker=' ',c='k',mfc='k',mec='k',mew=1, linewidth=2, markersize = 13, label = ' Bacchini et al. (2019)')
     ax.plot(kpc_r, h_scaled, zorder=2,linestyle='-',marker=' ',c='r',mfc='b',mec='k',mew=1, linewidth=1, markersize = 13)
-
+    # plot the fit of h data with respect to kpc_r
+    ax.plot(kpc_r, h_fit, linestyle='--', color='b', label=r' Slope = {:.2f}'.format(slope))    
 l_err_corr_units = l_err/cm_kpc
 percent_err_l    = (l_err_corr_units/l)*100
 try:
@@ -415,15 +437,29 @@ else:
     ref_data  = ' Boomsma et al. (2008)' 
 
 # data for u all galaxies
+
 ax.plot(kpc_r, dat_u, c='g', label=r'{}'.format(ref_data),linestyle=' ',alpha = 1,marker='*',mfc='b',mec='k',mew=1, markersize = 13)
 
 # extra data for M31 and NGC 6946
 if galaxy_name == 'm31':
     dat_u_warp = dat_u_warp/cm_km
-    ax.plot(kpc_r, dat_u_warp, c='g',  linestyle=' ', label=r' C. Carignan (with warp)', alpha = 1,marker='D',mfc='b',mec='k',mew=1, markersize = 8)
+    ax.plot(kpc_r, dat_u_warp, c='g',  linestyle=' ', label=r' C. Carignan (with warp)', alpha = 1,marker='D',mfc='b',mec='b',mew=1, markersize = 8)
 elif galaxy_name == 'ngc6946':
     dat_u_bacchini = dat_u_bacchini/cm_km
-    ax.plot(kpc_r, dat_u_bacchini, c='g',  linestyle=' ', label=r' Bacchini et al. (2019)', alpha = 1,marker='D',mfc='b',mec='k',mew=1, markersize = 8)
+    print(dat_u_bacchini)
+    # plot points less than 17.3 km/s in unfilled diamonds
+    for i in range(len(kpc_r)):
+        if i < 9:
+            if i == 0:
+                ax.plot(kpc_r[i], dat_u_bacchini[i], c='g', linestyle=' ', alpha = 1,marker='D',mfc='none',mec='b',mew=1, markersize = 8)
+            else:
+                ax.plot(kpc_r[i], dat_u_bacchini[i], c='g', linestyle=' ', alpha = 1,marker='D',mfc='none',mec='b',mew=1, markersize = 8)
+        else:
+            if i == 9:
+                ax.plot(kpc_r[i], dat_u_bacchini[i], c='g', linestyle=' ', alpha = 1,marker='D',mfc='b',mec='b',mew=1, markersize = 8, label = ' Bacchini et al. (2019)')
+            else:
+                ax.plot(kpc_r[i], dat_u_bacchini[i], c='g', linestyle=' ', alpha = 1,marker='D',mfc='b',mec='b',mew=1, markersize = 8)
+    # ax.plot(kpc_r, dat_u_bacchini, c='g',  linestyle=' ', label=r' Bacchini et al. (2019)', alpha = 1,marker='D',mfc='b',mec='k',mew=1, markersize = 8)
 
 if galaxy_name == 'm31':
     ax.plot(kpc_r, cs, color='g', zorder=3, linewidth=lw, marker='o',markersize=4,mfc='k',mec='k', label=r' $c_\mathrm{s}$'+ '{}'.format(ref_cs))

@@ -120,8 +120,12 @@ for i,hi in enumerate(h_init_trys):
             tau_f = taue_f 
         elif switch['tau']=='taur':
             tau_f = taur_f
-        else:
+        elif switch['tau']=='tau_min':
             tau_f = np.minimum(taue_f, taur_f)  
+        elif switch['tau']=='tau_max':
+            tau_f = np.maximum(taue_f, taur_f)
+        elif switch['tau']=='tau_mean':
+            tau_f = (taue_f + taur_f)/2
         
         omega  = Symbol('\Omega')
         kalpha = Symbol('K_alpha')
